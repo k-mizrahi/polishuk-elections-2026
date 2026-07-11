@@ -338,12 +338,14 @@ begin
   if auth.role() <> 'service_role' then
     raise exception 'service role only';
   end if;
-  delete from weekly_averages;
+  -- "where true" satisfies pg-safeupdate, which Supabase runs in the
+  -- PostgREST session and which rejects bare deletes even inside functions
+  delete from weekly_averages where true;
   insert into weekly_averages (week_id, party_id, avg_seats, n_polls)
   select (a->>'week_id')::int, p.id, (a->>'avg_seats')::numeric, (a->>'n_polls')::int
   from jsonb_array_elements(p_averages) a
   join parties p on p.code = a->>'party_code';
-  delete from scores;
+  delete from scores where true;
   insert into scores (user_id, week_id, kind, error, score)
   select (s->>'user_id')::uuid, (s->>'week_id')::int, s->>'kind',
          (s->>'error')::numeric, (s->>'score')::numeric

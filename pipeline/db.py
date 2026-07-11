@@ -17,11 +17,12 @@ class Supa:
         self.url = (url or os.environ["SUPABASE_URL"]).rstrip("/")
         self.key = key or os.environ["SUPABASE_SERVICE_ROLE_KEY"]
         self.s = requests.Session()
-        self.s.headers.update({
-            "apikey": self.key,
-            "Authorization": f"Bearer {self.key}",
-            "Content-Type": "application/json",
-        })
+        headers = {"apikey": self.key, "Content-Type": "application/json"}
+        # Legacy JWT service keys also go in Authorization; new-format keys
+        # (sb_secret_...) are apikey-only — a Bearer non-JWT would 401.
+        if not self.key.startswith("sb_"):
+            headers["Authorization"] = f"Bearer {self.key}"
+        self.s.headers.update(headers)
 
     def get(self, table: str, **params) -> list[dict]:
         """params are PostgREST query params, e.g. select='*', status='eq.open'.
