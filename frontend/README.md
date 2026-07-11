@@ -9,7 +9,7 @@ Specs: [docs/01-product-spec.md](../docs/01-product-spec.md) (UX) and
 ```sh
 cp .env.example .env   # fill in VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
 npm install
-npm run dev            # http://localhost:5173/fantasy_polls/
+npm run dev            # http://localhost:5173/polishuk-elections-2026/
 npm run build          # tsc --noEmit + vite build → dist/
 npm run preview
 ```

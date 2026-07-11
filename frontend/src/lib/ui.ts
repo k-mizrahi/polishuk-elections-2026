@@ -172,7 +172,7 @@ function renderFooter(): void {
       'div',
       { class: 'max-w-4xl mx-auto px-4 flex justify-center gap-4 flex-wrap' },
       el('a', { href: 'index.html#rules', class: 'hover:text-blue-900 hover:underline' }, t('footer.rules')),
-      link('https://github.com/k-mizrahi/fantasy_polls', 'GitHub', 'ltr'),
+      link('https://github.com/k-mizrahi/polishuk-elections-2026', 'GitHub', 'ltr'),
       link('https://x.com/_kobim', '@_kobim', 'ltr'),
     ),
   )

@@ -6,7 +6,7 @@ const pages = ['index', 'login', 'bets', 'polls', 'leaderboard', 'archive', 'pro
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', 'VITE_')
   return {
-    base: env.VITE_BASE_PATH || '/fantasy_polls/',
+    base: env.VITE_BASE_PATH || '/polishuk-elections-2026/',
     plugins: [tailwindcss()],
     build: {
       target: 'es2022', // page modules use top-level await
