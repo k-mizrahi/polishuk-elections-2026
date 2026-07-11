@@ -56,6 +56,10 @@ Per year-table, per row:
 
 All writes for a run happen in **one transaction**: either the whole scrape lands or none of it.
 
+## Live backfill reference (2026-07-11)
+
+First production run against revid 1363501450: **148 rows parsed → 147 ingested** (one exact-duplicate fingerprint on the page), 136 auto-approved, 12 pending (9 secondary scenario rows, 3 genuine data anomalies: a `?` cell, seat sums of 117/118/121). Use these numbers as a sanity baseline when validating parser changes against the fixture.
+
 ## Failure alerting
 
 - GH Actions failure → native email to the repo owner.

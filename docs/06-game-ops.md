@@ -60,14 +60,25 @@ Historical note: pre-merger polls remain stored against predecessor parties — 
 | Player reports a wrong score | Reproduce from `weekly_averages` + their bet (pure function, doc 02 §8); if data was wrong → poll-correction runbook; if engine bug → fix, recompute, announce |
 | Abuse (impersonation handle, sockpuppet clutter) | Admin → Users → ban (audit-logged); scores recompute excludes banned users |
 
-## Setup runbook (one-time, implementation phase)
+## Setup runbook (one-time — status as of 2026-07-11)
 
-1. Create the Supabase project; run migrations + seed via CLI.
-2. Google Cloud Console: OAuth client; callback `https://<ref>.supabase.co/auth/v1/callback`.
-3. Supabase Auth: enable Google + email (magic link); Site URL = Pages URL; add `http://localhost:5173/**`.
-4. GH repo: Actions secrets (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`), variables (`VITE_*`), enable Pages via Actions.
-5. Owner logs in once → SQL: set own profile `is_admin = true` (the only manual SQL in the system's life).
-6. Backfill: run the scraper once (it ingests the full page history); eyeball the polls page.
+1. ✅ Supabase project created (`tcljueekscqccgswlgxb`, eu-central-1); migrations 0001+0002 and seed applied.
+2. ⬜ Google Cloud Console: OAuth client; callback `https://tcljueekscqccgswlgxb.supabase.co/auth/v1/callback`.
+3. ⬜ Supabase Auth: enable Google; Site URL `https://k-mizrahi.github.io/polishuk-elections-2026/`; add `http://localhost:5173/**` to redirect URLs.
+4. ✅ GH repo `k-mizrahi/polishuk-elections-2026`: secrets + variables set, Pages enabled (workflow mode), site deployed and connected.
+5. ⬜ Owner logs in once → set own profile `is_admin = true` (the only manual SQL in the system's life).
+6. ✅ Backfill: first scrape ingested 147 polls (12 pending review); `close` opened the week of 2026-07-19.
+
+### Applying migrations (no supabase CLI needed)
+
+Migrations run over the **session pooler** (IPv4-safe) as `postgres`:
+host `aws-0-eu-central-1.pooler.supabase.com`, port 5432, db `postgres`,
+user `postgres.tcljueekscqccgswlgxb`, password in `~/.polishuk_db_password`.
+From `pipeline/`: `.venv/bin/python -c "import psycopg,pathlib; ..."` or any Postgres client.
+Two gotchas, both already encoded in the SQL: direct-connection DDL misses the
+dashboard's default privileges (hence `0002_grants.sql` — new tables/functions
+need explicit grants), and pg-safeupdate rejects bare `delete` even inside
+functions (`where true`).
 
 ## Risk register
 

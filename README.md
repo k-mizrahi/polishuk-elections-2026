@@ -9,7 +9,11 @@ The site displays recent polls (our own aggregator) and a live leaderboard. Hebr
 
 ## Status
 
-**Implemented, not yet deployed.** The design lives in [`docs/`](docs/) (start with [`docs/00-overview.md`](docs/00-overview.md)); pipeline, database migrations and frontend are built and tested locally. Remaining before launch: create the Supabase project + Google OAuth app, set GitHub secrets, and run the setup runbook in [`docs/06-game-ops.md`](docs/06-game-ops.md).
+**Live: https://k-mizrahi.github.io/polishuk-elections-2026/** — deployed 2026-07-11, connected to Supabase with 147 real polls ingested and the week of 2026-07-19 open for bets.
+
+Remaining before public launch (see [`handoffs/`](handoffs/) for the full list): Google OAuth setup, owner admin bootstrap, review of the 12 queued polls, Hebrew copy pass, and the scoring-constants sign-off ([`docs/02-scoring-spec.md`](docs/02-scoring-spec.md)).
+
+The design lives in [`docs/`](docs/) — start with [`docs/00-overview.md`](docs/00-overview.md).
 
 ## Repo layout
 

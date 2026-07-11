@@ -2,6 +2,8 @@
 
 Milestones with acceptance criteria. Order within V1 is the recommended build order — each step is verifiable on its own.
 
+**Status 2026-07-11**: milestones 1–9 built and deployed (site live and connected, first scrape + close done). Milestone 10 (dry-run week) pending; Google OAuth + admin bootstrap pending (docs/06 setup runbook). Known deferrals: admin "Weeks" and "Ops" tabs (V1.5), polls-page collapsible past-week averages (archive covers them), `database.types.ts` still hand-written (regenerate via `supabase gen types` when convenient), election_date not settable from the admin UI yet (app_settings edit).
+
 ## V1 — launch-blocking
 
 **Definition of done for launch**: a stranger with a Google account can play a full week loop; the owner can operate the game without touching SQL (except the one-time admin bootstrap).

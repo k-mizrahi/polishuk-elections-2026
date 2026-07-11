@@ -62,7 +62,7 @@ Two stacked cards — **final-outcome bet** first (it's the headline game), then
 ### `polls.html` — The aggregator
 
 - Reverse-chronological table of approved polls: date, pollster, publisher, sample size, one column per party (sticky first column; horizontal scroll on mobile, RTL-aware).
-- The **current week's running average** pinned as a highlighted row; previous weeks' finalized averages collapsible below.
+- The **current week's running average** pinned as a highlighted row. (Previous weeks' averages live on the archive page; the collapsible in-page history is deferred to V1.5.)
 - Sub-threshold entries shown as their stored pct ("2.8%") in muted text, counted as 0 in averages (tooltip explains).
 - V1.5: per-party trend chart (polls as dots, weekly averages as line).
 
@@ -83,7 +83,7 @@ Two stacked cards — **final-outcome bet** first (it's the headline game), then
 
 ### `admin.html`
 
-UI-gated by `profiles.is_admin`; **RLS is the real gate** — the page just doesn't render for others. Tabs:
+UI-gated by `profiles.is_admin`; **RLS is the real gate** — the page just doesn't render for others. Tabs (V1 ships 1, 2, 4, 5; **3 "Weeks" and 6 "Ops" are deferred to V1.5** — lock overrides and election_date are data edits meanwhile):
 
 1. **Poll queue**: pending polls with the scraper's diff/anomaly note; inline-editable seat cells; approve / reject. Approving triggers nothing special — next pipeline run recomputes (doc 02 §8).
 2. **Parties**: add/rename/retire party, alias editor, transition editor (old → new + effective date). "Merger-day" flow documented in doc 06.

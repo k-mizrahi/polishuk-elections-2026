@@ -39,7 +39,7 @@ All product decisions confirmed with the owner (Kobi), 2026-07-11:
 | Language | Hebrew RTL primary + English UI toggle (full i18n) |
 | Lock time | **Friday 12:00 Israel time** — ⚠️ flagged for revisit after observing when polls actually publish |
 | Login | Google OAuth + email magic link. No X/Twitter OAuth (API/pricing risk); players may display their X handle |
-| Name | **פולי-שוק בחירות** (Polishuk Elections). Repo may be renamed before publish (affects the github.io URL and Vite `base`) |
+| Name | **פולי-שוק בחירות** (Polishuk Elections). Repo: `polishuk-elections-2026`, site: https://k-mizrahi.github.io/polishuk-elections-2026/ |
 | Scoring | Absolute-error based, incentive-compatible, finals worth ~2.5–3× polls in aggregate, equal weight per week (no time multipliers). Constants pending sign-off — see [02](02-scoring-spec.md) |
 | Design language | Match Polishuk: Tailwind, light theme, `bg-sky-50` page, white `rounded-2xl shadow-xl` cards, `text-blue-900` extrabold headings, slate body text, `blue-600/700` buttons, amber callouts, emerald success accents, `max-w-4xl` container |
 
@@ -57,9 +57,12 @@ All product decisions confirmed with the owner (Kobi), 2026-07-11:
 
 Where documents overlap, the doc listed as source of truth wins; others must link, not restate numbers.
 
-## Open items (deliberately deferred)
+## Open items
 
-- Final repo/URL name (affects Vite `base` and the Pages URL).
-- Lock-time revisit after observing real poll publication cadence.
-- Scoring constants sign-off (`30 − E` poll, `100 − 2E` final) after the owner reviews [02](02-scoring-spec.md).
-- Election date is not yet set; the game is open-ended (see risk register in [06](06-game-ops.md)).
+- ~~Final repo/URL name~~ → resolved: `polishuk-elections-2026` (2026-07-11).
+- Lock-time revisit after observing real poll publication cadence (currently Friday 12:00).
+- Scoring constants sign-off (`30 − E` poll, `100 − 2E` final) after the owner reviews [02](02-scoring-spec.md) — constants live in `app_settings`, freeze at launch.
+- Hebrew copy review pass (planned as its own session); seeded Hebrew party names in `pipeline/registry.py` also pending owner review.
+- Election scheduled for **November 2026** (Wikipedia renamed its polling page accordingly); exact date and `is_final_week` still to be set when known.
+
+Current deployment state and next steps are tracked in [`handoffs/`](../handoffs/).

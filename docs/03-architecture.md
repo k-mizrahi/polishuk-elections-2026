@@ -51,10 +51,18 @@
 
 | Value | Where | Notes |
 |---|---|---|
-| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | GH Actions **secrets** | pipeline only; never in frontend or repo |
-| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | GH Actions **variables** → baked into Pages build | public by design |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | GH Actions **secrets** (set) | pipeline only; never in frontend or repo. The project uses Supabase's **new key format**: the secret key is `sb_secret_…`, sent in the `apikey` header ONLY (a `Authorization: Bearer` non-JWT 401s — `pipeline/db.py` handles both formats) |
+| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_BASE_PATH` | GH Actions **variables** (set) → baked into Pages build | public by design; "anon" key is the new `sb_publishable_…` format |
 | Google OAuth client id/secret | Google Cloud Console + Supabase dashboard | not in repo |
 | Scoring constants, election date, last scrape revid | `app_settings` table | runtime data, not env |
+| Local copies of the secret key / DB password | `~/.polishuk_service_key`, `~/.polishuk_db_password` (mode 600, owner's machine) | for local pipeline runs and migrations |
+
+**Live endpoints**: site `https://k-mizrahi.github.io/polishuk-elections-2026/`; Supabase project ref `tcljueekscqccgswlgxb` (eu-central-1); DB via session pooler `aws-0-eu-central-1.pooler.supabase.com:5432`, user `postgres.tcljueekscqccgswlgxb`.
+
+**Provisioning lessons (2026-07-11, all encoded in the repo):**
+- Migrations run over a direct/pooler connection as `postgres` do NOT get the dashboard's default privileges — `supabase/migrations/0002_grants.sql` grants table/sequence/function rights to `anon`/`authenticated`/`service_role` explicitly.
+- The project runs **pg-safeupdate** in the PostgREST session: bare `delete from t;` fails even inside SQL functions — use `delete from t where true`.
+- Pushing workflow files over HTTPS needs the `workflow` scope on the gh token (`gh auth refresh -s workflow`).
 
 **Environments**: one Supabase project (free tier = one). Local dev runs against it with discipline: schema changes only via `supabase/migrations` + CLI; pipeline has a `--dry-run` flag that prints intended writes. If this ever hurts, `supabase start` (local Docker) is the escape hatch — migrations make the schema portable.
 
