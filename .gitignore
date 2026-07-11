@@ -1,0 +1,24 @@
+# Node / frontend
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+
+# Python / pipeline
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Supabase local dev
+supabase/.temp/
+supabase/.branches/
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
