@@ -24,7 +24,10 @@ class Supa:
         })
 
     def get(self, table: str, **params) -> list[dict]:
-        """params are PostgREST query params, e.g. select='*', status='eq.open'."""
+        """params are PostgREST query params, e.g. select='*', status='eq.open'.
+        Use or_=... for PostgREST's `or` (Python keyword)."""
+        if "or_" in params:
+            params["or"] = params.pop("or_")
         r = self.s.get(f"{self.url}/rest/v1/{table}", params=params, timeout=60)
         r.raise_for_status()
         return r.json()

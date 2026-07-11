@@ -96,9 +96,6 @@ def cmd_close(dry_run: bool) -> int:
     if not dry_run:
         db.patch("game_weeks", {"status": "locked"},
                  status="eq.open", lock_at=f"lt.{now}")
-        db.patch("game_weeks", {"status": "open"},
-                 status="eq.scheduled", lock_at=f"gt.{now}",
-                 week_start=f"lte.{(date.today().isoformat())}", order="week_start")
         # open the nearest scheduled week whose lock is still ahead
         sched = db.get("game_weeks", select="id",
                        status="eq.scheduled", lock_at=f"gt.{now}",
