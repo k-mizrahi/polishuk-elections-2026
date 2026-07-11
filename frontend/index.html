@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>פולי-שוק בחירות</title>
+    <script>
+      var l = localStorage.getItem('lang') === 'en' ? 'en' : 'he';
+      document.documentElement.lang = l;
+      document.documentElement.dir = l === 'en' ? 'ltr' : 'rtl';
+    </script>
+    <script type="module" src="/src/pages/index.ts"></script>
+  </head>
+  <body class="bg-sky-50 min-h-screen flex flex-col">
+    <div id="app-header"></div>
+    <main id="main" class="max-w-4xl mx-auto px-4 py-8 w-full flex-1 space-y-6">
+      <section class="bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center space-y-4">
+        <h1 class="text-blue-900 font-extrabold text-3xl md:text-4xl" data-i18n="app.title">פולי-שוק בחירות</h1>
+        <p class="text-slate-700 text-lg" data-i18n="index.pitch">מנחשים את הסקרים, מנחשים את התוצאה, ומטפסים בטבלה — הימורים (לא) נושאי פרסים על בחירות 2026.</p>
+        <div id="banned-note" class="hidden"></div>
+        <a id="cta" href="login.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl py-3 px-8 shadow-md transition" data-i18n="index.cta">להתחיל לנחש</a>
+      </section>
+
+      <div id="status-strip"></div>
+
+      <section id="rules" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-4">
+        <h2 class="text-blue-900 font-extrabold text-2xl" data-i18n="index.rulesTitle">איך משחקים?</h2>
+        <ol class="list-decimal ps-5 space-y-2 text-slate-700">
+          <li data-i18n="index.rule1">בכל שבוע שולחים שני ניחושים: כמה מנדטים תקבל כל מפלגה בבחירות עצמן (ההימור הסופי), ומה יהיה ממוצע הסקרים של השבוע הקרוב (הימור הסקרים).</li>
+          <li data-i18n="index.rule2">כל ניחוש חייב להסתכם ב-120 מנדטים בדיוק — כמו כנסת אמיתית, רק בשליטתכםן.</li>
+          <li data-i18n="index.rule3">ההימורים ננעלים ביום שישי ב-12:00. עד הנעילה הם מוסתרים מכולםן; אחריה — כולם רואים הכול.</li>
+          <li data-i18n="index.rule4">שכחתם לעדכן? ההימור מהשבוע שעבר מתגלגל אוטומטית וממשיך לצבור נקודות.</li>
+          <li data-i18n="index.rule5">הימור סקרים מוצלח שווה עד 30 נקודות בשבוע; ההימור הסופי נמדד מול תוצאות האמת בכל שבוע שהוא עמד, ושווה עד 100 — כי הבחירות האמיתיות הן העיקר.</li>
+        </ol>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-900 space-y-1">
+          <p class="font-bold" data-i18n="index.carriedTitle">⚠️ מה זה הימור מתגלגל?</p>
+          <p data-i18n="index.carriedBody">לא הספקתם לעדכן לפני הנעילה? ההימור האחרון שלכםן ממשיך אוטומטית לשבוע הבא, כולל התאמה למיזוגי מפלגות. הוא נחשב לכל דבר — אבל שווה לערוך אותו כשמשהו משתנה.</p>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-4">
+        <h2 class="text-blue-900 font-extrabold text-2xl" data-i18n="index.exampleTitle">רגע, איך מחשבים ניקוד?</h2>
+        <p class="text-slate-700" data-i18n="index.exampleIntro">מנחשים מספרים שלמים, אבל ממוצע הסקרים יוצא שברי — ככה זה נראה בפועל:</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-slate-700">
+            <thead>
+              <tr class="text-blue-900 font-bold">
+                <th class="px-3 py-2 text-start" data-i18n="index.exampleParty">מפלגה</th>
+                <th class="px-3 py-2 text-start" data-i18n="index.exampleBet">הניחוש שלכםן</th>
+                <th class="px-3 py-2 text-start" data-i18n="index.exampleAvg">ממוצע השבוע</th>
+                <th class="px-3 py-2 text-start" data-i18n="index.exampleErr">טעות</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t border-slate-100">
+                <td class="px-3 py-2 font-medium" data-i18n="index.exLikud">הליכוד</td>
+                <td class="px-3 py-2" dir="ltr">26</td>
+                <td class="px-3 py-2" dir="ltr">24.67</td>
+                <td class="px-3 py-2 text-red-600" dir="ltr">1.33</td>
+              </tr>
+              <tr class="border-t border-slate-100">
+                <td class="px-3 py-2 font-medium" data-i18n="index.exTogether">ביחד</td>
+                <td class="px-3 py-2" dir="ltr">21</td>
+                <td class="px-3 py-2" dir="ltr">22.33</td>
+                <td class="px-3 py-2 text-red-600" dir="ltr">1.33</td>
+              </tr>
+              <tr class="border-t border-slate-100">
+                <td class="px-3 py-2 font-medium" data-i18n="index.exDems">הדמוקרטים</td>
+                <td class="px-3 py-2" dir="ltr">12</td>
+                <td class="px-3 py-2" dir="ltr">12.00</td>
+                <td class="px-3 py-2 text-emerald-600" dir="ltr">0</td>
+              </tr>
+              <tr class="border-t border-slate-100">
+                <td class="px-3 py-2 font-medium" data-i18n="index.exShas">ש"ס</td>
+                <td class="px-3 py-2" dir="ltr">10</td>
+                <td class="px-3 py-2" dir="ltr">9.67</td>
+                <td class="px-3 py-2 text-red-600" dir="ltr">0.33</td>
+              </tr>
+              <tr class="border-t border-slate-100 text-slate-500">
+                <td class="px-3 py-2" data-i18n="index.exampleRest">שאר המפלגות</td>
+                <td class="px-3 py-2">…</td>
+                <td class="px-3 py-2">…</td>
+                <td class="px-3 py-2" dir="ltr">7.7</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-900 font-bold" data-i18n="index.exampleTotal">סך הטעות: 10.7 מנדטים, ולכן ניקוד השבוע הוא 19.3 נקודות (מתוך 30 אפשריות).</div>
+      </section>
+    </main>
+    <div id="app-footer"></div>
+  </body>
+</html>

@@ -9,7 +9,7 @@ The site displays recent polls (our own aggregator) and a live leaderboard. Hebr
 
 ## Status
 
-**Planning phase.** No application code yet — the design lives in [`docs/`](docs/), which is the source of truth for implementation. Start with [`docs/00-overview.md`](docs/00-overview.md).
+**Implemented, not yet deployed.** The design lives in [`docs/`](docs/) (start with [`docs/00-overview.md`](docs/00-overview.md)); pipeline, database migrations and frontend are built and tested locally. Remaining before launch: create the Supabase project + Google OAuth app, set GitHub secrets, and run the setup runbook in [`docs/06-game-ops.md`](docs/06-game-ops.md).
 
 ## Repo layout
 

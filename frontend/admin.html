@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ניהול · פולי-שוק בחירות</title>
+    <script>
+      var l = localStorage.getItem('lang') === 'en' ? 'en' : 'he';
+      document.documentElement.lang = l;
+      document.documentElement.dir = l === 'en' ? 'ltr' : 'rtl';
+    </script>
+    <script type="module" src="/src/pages/admin.ts"></script>
+  </head>
+  <body class="bg-sky-50 min-h-screen flex flex-col">
+    <div id="app-header"></div>
+    <main id="main" class="max-w-4xl mx-auto px-4 py-8 w-full flex-1 space-y-6">
+      <h1 class="text-blue-900 font-extrabold text-3xl" data-i18n="admin.title">ניהול</h1>
+      <div id="root" class="space-y-6"></div>
+    </main>
+    <div id="app-footer"></div>
+  </body>
+</html>

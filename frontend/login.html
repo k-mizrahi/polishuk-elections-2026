@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>התחברות · פולי-שוק בחירות</title>
+    <script>
+      var l = localStorage.getItem('lang') === 'en' ? 'en' : 'he';
+      document.documentElement.lang = l;
+      document.documentElement.dir = l === 'en' ? 'ltr' : 'rtl';
+    </script>
+    <script type="module" src="/src/pages/login.ts"></script>
+  </head>
+  <body class="bg-sky-50 min-h-screen flex flex-col">
+    <div id="app-header"></div>
+    <main id="main" class="max-w-4xl mx-auto px-4 py-8 w-full flex-1 space-y-6">
+      <section class="bg-white rounded-2xl shadow-xl p-6 md:p-8 max-w-md mx-auto space-y-5">
+        <h1 class="text-blue-900 font-extrabold text-2xl" data-i18n="title.login">התחברות</h1>
+        <p class="text-slate-600" data-i18n="login.lead">נכנסים, בוחרים כינוי, ומתחילים לנחש. בלי סיסמאות, מבטיחותים.</p>
+        <div id="login-msg"></div>
+        <button id="google-btn" class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold rounded-xl py-3 px-8 shadow-md transition" data-i18n="login.google">התחברות עם Google</button>
+        <p class="text-center text-sm text-slate-500" data-i18n="login.or">או עם קישור קסם למייל</p>
+        <form id="magic-form" class="flex gap-2">
+          <input id="email" type="email" required dir="ltr" placeholder="you@example.com"
+                 class="flex-1 min-w-0 border border-slate-300 rounded-xl px-3 py-2 text-slate-800" />
+          <button type="submit" class="bg-sky-100 hover:bg-sky-200 disabled:bg-slate-100 disabled:text-slate-400 text-blue-900 font-bold rounded-xl py-2 px-4 text-sm transition whitespace-nowrap" data-i18n="login.sendLink">שלחו לי קישור</button>
+        </form>
+      </section>
+      <div id="onboard-root"></div>
+    </main>
+    <div id="app-footer"></div>
+  </body>
+</html>
