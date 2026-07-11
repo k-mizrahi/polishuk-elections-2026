@@ -4,21 +4,29 @@ Source of truth for `pipeline/scraper.py`. Runs on GitHub Actions cron every 6 h
 
 ## Source
 
-English Wikipedia, **`Opinion_polling_for_the_next_Israeli_legislative_election`**, fetched via the **MediaWiki API**, not the skinned page:
+English Wikipedia, **`Opinion_polling_for_the_2026_Israeli_legislative_election`** (the page was renamed from "…the next Israeli legislative election" once the date firmed up — the old title is a redirect), fetched via the **MediaWiki API**, not the skinned page:
 
 ```
 GET https://en.wikipedia.org/w/api.php?action=parse
-    &page=Opinion_polling_for_the_next_Israeli_legislative_election
-    &prop=text|revid&format=json&formatversion=2
+    &page=Opinion_polling_for_the_2026_Israeli_legislative_election
+    &prop=text|revid&format=json&formatversion=2&redirects=1
 ```
 
+- **`redirects=1` is mandatory** — without it a renamed page silently returns a tiny redirect stub instead of content (observed live 2026-07-11).
 - More stable than scraping rendered HTML (no skin/banner markup) and returns a **`revid`**.
 - **Change detection**: compare `revid` to `app_settings['last_scraped_revid']`; if unchanged, log "no change" and exit 0 (a keep-alive `select 1` still runs so the Supabase project never idles). Update the stored revid only after a fully successful run.
 - Set a descriptive `User-Agent` (`polishuk-elections-scraper/1.0 (contact: mizrahi.kobi@gmail.com)`) per Wikimedia etiquette; one request per run is far below any rate limit.
 
-## Page structure (as of July 2026 — fixtures must track this)
+## Page structure (verified live 2026-07-11, revid 1363501450 — fixtures track this)
 
-Reverse-chronological `wikitable`s grouped by year (2026, 2025, 2024, 2022–23). Columns: fieldwork date · polling firm · publisher · sample size · one column per party (~12–20, **changes over time** via mergers/splits) · "Others" · "Gov." (coalition total). Cells: integer seats; `N%` for sub-threshold parties; dash/blank for not-polled. Merger events appear as footnotes and as column set changes between table segments.
+The page has ~34 wikitables but **only tables under H2 "Seat projections" → year H3 sections (2026, 2025, …) are ingested**. Everything else — scenario polls ("Likud B", "Netanyahu retirement"…), percentage-only tables, the Arab-voters section, preferred-PM tables, the pollster directory — is excluded by the section rule, not by header heuristics.
+
+Main-table structure:
+- Columns: fieldwork date · polling firm · publisher · sample size (**absent in some table segments**) · one column per party (~12–16, **changes over time** via mergers/splits) · "Others" · "Gov." (coalition checksum).
+- **Multi-row headers with rowspan/colspan**: a bloc column (e.g. "Joint List") can span leaf sub-columns ("Hadash–Ta'al", "Balad"). Canonical mapping is by the **top-level header**; leaf cells are **summed into the bloc**, identity-deduped because a poll may report the bloc as a single `colspan` cell. The bloc is what appears on the ballot, so it is what bets and averages are defined on.
+- **Two-row polls**: one poll can span two result rows sharing rowspanned meta cells (scenario variants). The first row is the headline result (auto-approvable); **second+ rows route to `pending`** ("secondary scenario row") so one pollster never gets two votes in a weekly average.
+- **Announcement rows**: political events ("X and Y merge to form Z") appear as rows whose text spans the party columns — detected (≤1 unique non-numeric cell across party columns) and skipped.
+- Merger events appear as footnotes and as column-set changes between table segments.
 
 ## Parsing pipeline
 
@@ -31,11 +39,12 @@ Per year-table, per row:
    | Cell looks like | Interpretation |
    |---|---|
    | integer `n` | `seats = n` |
-   | `n.n%` / `n%` | `seats = 0, below_threshold = true, pct = n` |
-   | dash / blank | `seats = 0` (a party absent from a 120-seat projection got no seats) |
-   | anything else | row → review queue (`pending`), note the cell |
+   | `(n.n%)` / `n%` / `(<n%)` | `seats = 0, below_threshold = true, pct = n` |
+   | dash / blank / `— N/a` | `seats = 0` (a party absent from a 120-seat projection got no seats) |
+   | percent + trailing text (`(1.8%) Zehut at 1.8%`) | as percent; trailing text kept as a note |
+   | anything else (e.g. `?`) | row → review queue (`pending`), note the cell |
 
-3. **Dates.** Fieldwork cell parsed to `(fieldwork_start, fieldwork_end)`; handles "10–12 Jul 2026", "12 Jul 2026", cross-month ranges ("28 Jun – 2 Jul"), with the table's year as context. Unparseable → `pending`.
+3. **Dates.** Fieldwork cell parsed to `(fieldwork_start, fieldwork_end)`; handles single dates ("9 Jul"), same-month ranges ("10–12 Jul" — the start inherits the end's month), cross-month ranges ("30 Jun – 3 Jul") and Dec→Jan crossings, with the table's year-section as context; all dash variants accepted. Unparseable → `pending`.
 4. **Row validation.** Σ(party seats) + Others = **exactly 120** (tolerance 0); "Gov." parsed and used **only as a checksum** against the sum of mapped coalition parties (mismatch → `pending`, note the delta; the set of coalition parties is an alias-table-style config, not hardcoded).
 5. **Fingerprint & dedupe.** `row_fingerprint = sha256(pollster | fieldwork_end | sorted "(party_code:seats)" vector)`. Unseen fingerprint → insert. Seen and identical → skip.
 6. **Week assignment.** `game_week_id` = the game week whose [Sunday, Saturday] contains `fieldwork_end`; polls before the first game week get `null` (displayed, never scored).

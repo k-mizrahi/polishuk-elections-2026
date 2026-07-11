@@ -123,6 +123,7 @@ create table bets (
   kind                text not null check (kind in ('poll', 'final')),
   is_carried          boolean not null default false,
   carried_from_bet_id int references bets (id),   -- provenance chain
+  needs_review        boolean not null default false,  -- carried bet that could not be remapped (split)
   created_at          timestamptz not null default now(),
   updated_at          timestamptz not null default now(),
   unique (user_id, week_id, kind)
@@ -189,11 +190,12 @@ create table audit_log (
 1. Reject if `now() >= (select lock_at from game_weeks where id = week_id)`.
 2. Reject if the week's `status` is not `open`.
 3. Reject if `(select is_banned from profiles where id = user_id)`.
+4. `service_role` (the pipeline's carried-bet writes) is exempt from 1–3 but never from the completeness checks below.
 
 **Bet completeness** — a `constraint trigger ... deferrable initially deferred` on `bet_lines` validating, at transaction commit:
 
 1. `sum(seats) = 120` across the bet's lines.
-2. Every line's party is active for the bet's week; every active party has a line (0 allowed).
+2. Every line's party is active for the bet's week and every active party has a line (0 allowed) — **unless `bets.needs_review`** (a carried bet whose party split and could not be deterministically remapped is stored as-is and flagged; scoring bridges it via the common partition, docs/02 §6).
 
 (Frontend writes a bet atomically via an `upsert_bet(week_id, kind, lines jsonb)` **security-invoker RPC** that replaces all lines in one transaction, keeping the deferred trigger simple and the client code sane.)
 

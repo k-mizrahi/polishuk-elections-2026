@@ -1,0 +1,19 @@
+[project]
+name = "polishuk-pipeline"
+version = "0.1.0"
+description = "Polls scraper, weekly close and scoring engine for Polishuk Elections"
+requires-python = ">=3.12"
+dependencies = [
+    "requests>=2.32",
+    "beautifulsoup4>=4.12",
+    "lxml>=5.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pglast>=7.0"]
+
+[tool.setuptools]
+py-modules = ["scraper", "scoring", "weekly_close", "gameweeks", "registry", "db", "cli"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,25 @@
+name: test
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e './pipeline[dev]'
+      - run: python -m pytest pipeline/tests -q
+      - name: Migration + seed SQL syntax check
+        run: |
+          python - <<'EOF'
+          import pglast, glob
+          for f in sorted(glob.glob('supabase/migrations/*.sql')) + ['supabase/seed.sql']:
+              pglast.parse_sql(open(f).read())
+              print('OK', f)
+          EOF

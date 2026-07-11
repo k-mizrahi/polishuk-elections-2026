@@ -1,0 +1,20 @@
+name: recompute
+on:
+  workflow_dispatch: {}   # manual: after poll corrections or election night (docs/06)
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ./pipeline
+      - name: Full scoring recompute
+        working-directory: pipeline
+        run: python cli.py score
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

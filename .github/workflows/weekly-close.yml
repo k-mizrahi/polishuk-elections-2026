@@ -1,0 +1,41 @@
+name: weekly-close
+on:
+  schedule:
+    # GitHub cron is UTC-only and Israel flips UTC+2/+3, so schedule both
+    # candidate hours; the in-script guard runs the job only in the intended
+    # local window (docs/03).
+    - cron: "5 9 * * FRI"    # Fri 12:05 IDT (summer)
+    - cron: "5 10 * * FRI"   # Fri 12:05 IST (winter)
+    - cron: "5 9 * * WED"    # Wednesday finalize run (docs/06)
+    - cron: "5 10 * * WED"
+  workflow_dispatch: {}
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ./pipeline
+      - name: DST guard
+        id: guard
+        run: |
+          H=$(TZ=Asia/Jerusalem date +%H)
+          echo "run=$([ "$H" = "12" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+      - name: Close week (flip statuses, carry forward, recompute scores)
+        if: steps.guard.outputs.run == 'yes'
+        working-directory: pipeline
+        run: python cli.py close
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: File an issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create --title "Weekly close failure $(date -u +%F)" \
+            --body "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID — jobs are idempotent, rerun after fixing (docs/06)."
