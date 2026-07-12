@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 
-const pages = ['index', 'login', 'bets', 'polls', 'leaderboard', 'archive', 'profile', 'admin']
+const pages = ['index', 'login', 'bets', 'polls', 'leaderboard', 'archive', 'rules', 'profile', 'admin']
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', 'VITE_')

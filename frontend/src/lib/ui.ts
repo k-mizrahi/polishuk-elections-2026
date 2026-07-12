@@ -115,7 +115,7 @@ export interface Ctx {
   profile: Profile | null
 }
 
-const NAV = ['polls', 'leaderboard', 'bets', 'archive'] as const
+const NAV = ['polls', 'leaderboard', 'bets', 'archive', 'rules'] as const
 
 function renderHeader(active: string): void {
   const nav = el(
@@ -171,7 +171,7 @@ function renderFooter(): void {
     el(
       'div',
       { class: 'max-w-4xl mx-auto px-4 flex justify-center gap-4 flex-wrap' },
-      el('a', { href: 'index.html#rules', class: 'hover:text-blue-900 hover:underline' }, t('footer.rules')),
+      el('a', { href: 'rules.html', class: 'hover:text-blue-900 hover:underline' }, t('footer.rules')),
       link('https://github.com/k-mizrahi/polishuk-elections-2026', 'GitHub', 'ltr'),
       link('https://x.com/_kobim', '@_kobim', 'ltr'),
     ),
