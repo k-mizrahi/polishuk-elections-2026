@@ -13,7 +13,7 @@ Source of truth for pages, states, i18n/RTL behavior, and copy tone. Game math l
 
 1. Log in → see your current standing bets (fresh, carried, or none).
 2. Adjust two lists so each sums to 120 — before **Friday 12:00**.
-3. Saturday night the polls week closes; mid-week your poll score lands and everyone's bets go public.
+3. Thursday night the polls week closes; your poll score lands soon after (bets went public at the Friday lock).
 4. Repeat until election day; after results, every week you were right pays out.
 
 ## Visual identity

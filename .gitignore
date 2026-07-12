@@ -17,6 +17,9 @@ venv/
 supabase/.temp/
 supabase/.branches/
 
+# Dev-only tooling that writes mock data to the live DB (kept out of the public repo)
+scripts/
+
 # OS / editor
 .DS_Store
 *.swp

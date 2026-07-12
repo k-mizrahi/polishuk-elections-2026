@@ -1,7 +1,7 @@
 import { t } from '../lib/i18n'
 import { activeParties, fetchParties, fetchWeeks, supabase, weekNumber } from '../lib/supabase'
-import { BTN, BTN_GHOST, callout, card, countdown, el, fmtDate, initPage, roundTo120, seatForm, skeleton } from '../lib/ui'
-import type { Bet, BetKind, BetLine, GameWeek, Party, WeeklyAverage } from '../lib/database.types'
+import { BTN, BTN_GHOST, callout, card, countdown, el, fmtDate, initPage, seatForm, skeleton } from '../lib/ui'
+import type { Bet, BetKind, BetLine, GameWeek, Party } from '../lib/database.types'
 
 type BetWithLines = Bet & { bet_lines: BetLine[] }
 
@@ -76,26 +76,6 @@ async function renderOpen(weeks: GameWeek[], parties: Party[], open: GameWeek): 
     callout('amber', t('bets.lockLead'), ' ', cd),
   )
 
-  // lazily fetched previous-week averages for the prefill quick-fill
-  let prevAvgPromise: Promise<Record<string, number> | null> | undefined
-  const prevAverages = () => {
-    prevAvgPromise ??= (async () => {
-      const prev = weeks.filter((w) => w.week_start < open.week_start).pop()
-      if (!prev) return null
-      const { data } = await supabase!.from('weekly_averages').select('*').eq('week_id', prev.id)
-      const rows = (data ?? []) as WeeklyAverage[]
-      if (!rows.length) return null
-      const byId = new Map(parties.map((p) => [p.id, p.code]))
-      const fractional: Record<string, number> = {}
-      for (const r of rows) {
-        const code = byId.get(r.party_id)
-        if (code) fractional[code] = r.avg_seats
-      }
-      return roundTo120(fractional, active.map((p) => p.code))
-    })()
-    return prevAvgPromise
-  }
-
   const buildCard = (kind: BetKind, extraFills: HTMLElement[] = []) => {
     const bet = bets.get(kind)
     const form = seatForm(active, linesToValues(bet, parties))
@@ -142,20 +122,13 @@ async function renderOpen(weeks: GameWeek[], parties: Party[], open: GameWeek): 
       }
     })
 
-    const prefillBtn = el('button', { class: BTN_GHOST }, t('bets.prefillAvg')) as HTMLButtonElement
-    prefillBtn.addEventListener('click', async () => {
-      const avg = await prevAverages()
-      if (avg) form.setValues(avg)
-      else prefillBtn.disabled = true
-    })
-
     return {
       form,
       el: card(
         el('h2', { class: 'text-blue-900 font-extrabold text-xl mb-3' }, t(kind === 'final' ? 'bets.finalTitle' : 'bets.pollTitle')),
         carriedBanner,
         form.root,
-        el('div', { class: 'flex flex-wrap gap-2 mt-4' }, prefillBtn, ...extraFills),
+        extraFills.length ? el('div', { class: 'flex flex-wrap gap-2 mt-4' }, ...extraFills) : null,
         el('div', { class: 'mt-4 space-y-3' }, submit, status),
       ),
     }

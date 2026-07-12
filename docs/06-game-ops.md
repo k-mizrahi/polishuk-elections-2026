@@ -4,7 +4,7 @@ Operational truth for running the game week to week. The automation lives in `.g
 
 ## Weekly cycle (what happens when)
 
-All times Asia/Jerusalem. Game week *w* runs Sunday–Saturday; its bets lock the **preceding Friday 12:00**.
+All times Asia/Jerusalem. Game week *w* runs **Friday–Thursday** (R7, docs/09); its bets lock at that **Friday 12:00**.
 
 | When | What | Who |
 |---|---|---|

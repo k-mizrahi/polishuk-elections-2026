@@ -76,6 +76,7 @@ create table polls (
   publisher       text,
   fieldwork_start date,
   fieldwork_end   date not null,
+  publication_date date,                    -- nullable, future-use (R7); membership keys on fieldwork_end
   sample_size     int,
   source_url      text,
   row_fingerprint text unique not null,     -- sha256(pollster|fieldwork_end|sorted seat vector)
@@ -101,9 +102,9 @@ create table poll_results (
 ```sql
 create table game_weeks (
   id              serial primary key,
-  week_start      date not null unique,     -- Sunday (Israel)
-  week_end        date not null,            -- Saturday
-  lock_at         timestamptz not null,     -- preceding Friday 12:00 Israel, stored UTC
+  week_start      date not null unique,     -- Friday (Israel); Friday→Thursday window (R7, docs/09)
+  week_end        date not null,            -- Thursday
+  lock_at         timestamptz not null,     -- the week's own Friday 12:00 Israel, stored UTC
   status          text not null default 'scheduled'
                     check (status in ('scheduled', 'open', 'locked', 'scored')),
   is_final_week   boolean not null default false,

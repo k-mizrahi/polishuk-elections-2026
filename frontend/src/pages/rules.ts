@@ -90,11 +90,9 @@ root.replaceChildren(
     callout('emerald', el('span', { class: 'font-bold' }, t('rules.exampleTotal'))),
   ),
 
-  section('rules.mergeTitle', p('rules.mergeBody'), callout('amber', t('rules.mergeExample'))),
+  section('rules.lbTitle', p('rules.lbBody')),
 
-  section('rules.lbTitle', p('rules.lbBody'), p('rules.lbTie')),
-
-  section('rules.fairTitle', p('rules.fairBody')),
+  section('rules.pollsTitle', p('rules.pollsBody')),
 
   section('rules.voidTitle', p('rules.voidBody')),
 

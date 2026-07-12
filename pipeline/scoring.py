@@ -10,8 +10,12 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 DEFAULT_CONSTANTS = {
-    "poll": {"base": 30.0, "per_seat": 1.0},
-    "final": {"base": 100.0, "per_seat": 2.0},
+    # Caps are set well above the realistic max total error so the max(0, ·)
+    # floor almost never binds (it only zeroes troll/random bets) — this keeps
+    # information on large errors instead of collapsing them all to 0. Final is
+    # 1.5× poll at equal error (docs/02 §4).
+    "poll": {"base": 100.0, "per_seat": 1.0},
+    "final": {"base": 150.0, "per_seat": 1.0},
 }
 
 

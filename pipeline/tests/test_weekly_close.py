@@ -45,18 +45,18 @@ def test_carry_forward_skips_players_who_already_bet():
 
 
 def test_week_calendar():
-    # 2026-07-11 is a Saturday -> its week started Sunday 2026-07-05
-    assert gameweeks.week_start_for(date(2026, 7, 11)) == date(2026, 7, 5)
-    assert gameweeks.week_start_for(date(2026, 7, 5)) == date(2026, 7, 5)
-    # lock = preceding Friday 12:00 Israel = 09:00 UTC in July (IDT=UTC+3)
-    lock = gameweeks.lock_at_for(date(2026, 7, 5))
-    assert lock == datetime(2026, 7, 3, 9, 0, tzinfo=timezone.utc)
-    # winter week: IST=UTC+2 -> 10:00 UTC (DST correctness)
-    lock_w = gameweeks.lock_at_for(date(2026, 12, 6))
+    # 2026-07-11 is a Saturday -> its week started Friday 2026-07-10
+    assert gameweeks.week_start_for(date(2026, 7, 11)) == date(2026, 7, 10)
+    assert gameweeks.week_start_for(date(2026, 7, 10)) == date(2026, 7, 10)
+    # lock = the week's own Friday 12:00 Israel = 09:00 UTC in July (IDT=UTC+3)
+    lock = gameweeks.lock_at_for(date(2026, 7, 10))
+    assert lock == datetime(2026, 7, 10, 9, 0, tzinfo=timezone.utc)
+    # winter week: IST=UTC+2 -> 10:00 UTC (DST correctness); 2026-12-04 is a Friday
+    lock_w = gameweeks.lock_at_for(date(2026, 12, 4))
     assert lock_w == datetime(2026, 12, 4, 10, 0, tzinfo=timezone.utc)
 
 
 def test_generate_weeks_contiguous():
     weeks = gameweeks.generate_weeks(date(2026, 7, 12), date(2026, 12, 31))
-    assert weeks[0]["week_start"] == "2026-07-12"
+    assert weeks[0]["week_start"] == "2026-07-10"   # Friday on/before the range start
     assert len(weeks) == 25

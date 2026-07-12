@@ -15,7 +15,7 @@ It is the sequel to [Polishuk](https://k-mizrahi.github.io/polishuk), the Democr
 
 | Term | Definition |
 |---|---|
-| **Game week (שבוע משחק)** | The measured window: Sunday 00:00 → Saturday 23:59, Asia/Jerusalem. A poll belongs to game week *w* iff its **last fieldwork date** falls inside *w*. |
+| **Game week (שבוע משחק)** | The measured window: Friday 00:00 → Thursday 23:59, Asia/Jerusalem (the "Friday→Friday" window, R7/docs/09). A poll belongs to game week *w* iff its **last fieldwork date** falls inside *w*. |
 | **Lock (נעילה)** | The submission deadline for week *w*'s bets: **Friday 12:00 Israel time preceding week *w*** (⚠️ provisional — revisit once we observe real poll publication days). After lock, week-*w* bets are frozen and become public. Enforced by a timestamp comparison in the database, not by a scheduled job. |
 | **Standing bet** | The bet that counts for a player in a given week: either freshly submitted that week or carried forward. |
 | **Carried bet (הימור מתגלגל)** | When a player doesn't submit by lock, their most recent bet of that kind is automatically cloned into the new week (`is_carried = true`), remapped through any party mergers. |

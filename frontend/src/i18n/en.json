@@ -1,6 +1,5 @@
 {
   "app.title": "Poli-Shuk Elections",
-
   "nav.polls": "Polls",
   "nav.leaderboard": "Leaderboard",
   "nav.bets": "My Bets",
@@ -9,7 +8,6 @@
   "nav.login": "Log in",
   "nav.logout": "Log out",
   "nav.profile": "Profile",
-
   "title.login": "Log in",
   "title.bets": "My Bets",
   "title.polls": "Polls",
@@ -18,12 +16,9 @@
   "title.rules": "Rules",
   "title.profile": "Profile",
   "title.admin": "Admin",
-
   "footer.rules": "Rules",
-
   "banner.notConnected": "⚠️ Not connected to the server yet — data will appear once the connection is configured.",
   "banner.dismiss": "Dismiss",
-
   "common.locked": "Locked!",
   "common.countdownDays": "{d} days {time}",
   "common.loadError": "⚠️ Something went wrong loading the data. Try refreshing.",
@@ -32,7 +27,6 @@
   "common.pollBet": "Poll bet",
   "common.toLogin": "Log in",
   "common.banned": "⚠️ This account is banned from playing. Questions? @_kobim",
-
   "index.pitch": "Guess the polls, guess the result, climb the table — (not) prize-winning bets on the 2026 election.",
   "index.cta": "Start guessing",
   "index.statusTitle": "Your status this week",
@@ -61,36 +55,28 @@
   "index.exampleTotal": "Total error: 10.7 seats, so the week's score is 19.3 points (out of a possible 30).",
   "index.carriedTitle": "⚠️ What is a carried bet?",
   "index.carriedBody": "Didn't update before the lock? Your last bet automatically rolls into the next week, including adjustments for party mergers. It counts like any other bet — but it's worth editing when something changes.",
-
   "rules.h1": "How to Play",
   "rules.lead": "Everything you need to play: what you guess, when, and how you earn points.",
-
   "rules.aboutTitle": "What is Poli-Shuk Elections?",
-  "rules.aboutBody": "A fantasy game for the 2026 Knesset elections. Each week you guess how many seats every party will get — both on election day and in the polls — and earn points for how close you were. No prizes, just pride and a leaderboard.",
-
+  "rules.aboutBody": "A fantasy game for the 2026 Knesset elections. Each week you guess how many seats every party will get — both on election day and in next week's polls — and earn points for how close you were. No prizes, just pride and a leaderboard.",
   "rules.betsTitle": "Two bets every week",
   "rules.betsIntro": "Each week you fill in two separate guesses, each a split of 120 seats among the parties:",
   "rules.finalTitle": "🏛️ The final bet",
   "rules.finalBody": "What the actual election result will be. This is the main event — the real election is the whole point, so it's worth the most points.",
   "rules.pollTitle": "📊 The poll bet",
   "rules.pollBody": "What the average of next week's published polls will be. This is the weekly fun — fast feedback on how well you're reading the map.",
-
   "rules.seatsTitle": "The 120 rule",
   "rules.seatsBody": "Every guess must total exactly 120 seats — just like a real Knesset. The form won't let you submit any other sum.",
   "rules.seatsThreshold": "For each party you guess either 0, or 4 and up — never 1–3 seats, because below the electoral threshold a party doesn't enter the Knesset.",
-
   "rules.cycleTitle": "The week, the lock, and the reveal",
   "rules.cycleBody": "There's always exactly one week open for betting. Bets lock on Friday at 12:00 (Israel time). Until the lock every bet is hidden — nobody sees what you guessed, and you don't see anyone else's. At lock time everything is revealed to everyone, and your bet starts counting.",
-
   "rules.carriedTitle": "Carried-forward bets",
-  "rules.carriedBody": "Didn't update before the lock? No problem — your last bet automatically carries into the next week and keeps earning points, including automatic adjustment for party mergers. It's worth editing when something changes, but not required.",
-
+  "rules.carriedBody": "Didn't update before the lock? No problem — your last bet automatically carries into the next week and keeps earning points. It's worth editing when something changes, but not required.",
   "rules.scoreTitle": "How scoring works",
   "rules.scoreIntro": "The basis is simple: we measure how many seats you were off in total (your \"error\"), and the smaller the error, the higher the score.",
   "rules.scoreErr": "Error = the sum of absolute differences between your guess and the actual outcome, across all parties. Being 2 seats too high on one party and 1 too low on another = an error of 3.",
-  "rules.scorePollFormula": "Poll bet: up to 30 points a week — 30 minus your error (never below 0).",
-  "rules.scoreFinalFormula": "Final bet: up to 100 points — 100 minus twice your error (never below 0). Worth more because the real election is the point, and counted for every week the bet stood.",
-
+  "rules.scorePollFormula": "Poll bet: up to 100 points a week — 100 minus your error (never below 0).",
+  "rules.scoreFinalFormula": "Final bet: up to 150 points — 150 minus your error (never below 0). Worth 1.5× the poll bet because the real election is the point, and counted for every week the bet stood.",
   "rules.exampleTitle": "Example: a poll bet",
   "rules.exampleIntro": "You guess whole numbers, but the poll average comes out fractional. Here's how the error is computed:",
   "rules.colParty": "Party",
@@ -98,24 +84,14 @@
   "rules.colAvg": "Week average",
   "rules.colErr": "Error",
   "rules.exampleRest": "All other parties",
-  "rules.exampleTotal": "Total error: 10.7 seats ⟵ week score: 19.3 out of 30.",
-
-  "rules.mergeTitle": "Party mergers and splits",
-  "rules.mergeBody": "Israeli parties merge and split constantly. The rule is simple: merged parties are compared as one bloc. If you guessed two parties separately and they ran together, your guess is summed and compared to the bloc. That way you never lose points over a political event you couldn't have predicted.",
-  "rules.mergeExample": "Example: you guessed Yesh Atid 15 and Bennett 12, and they ran together as \"Together\" and got 24. Your guess counts as 27 vs. 24 — an error of just 3.",
-
+  "rules.exampleTotal": "Total error: 10.7 seats ⟵ week score: 89.3 out of 100.",
   "rules.lbTitle": "The leaderboard",
   "rules.lbBody": "Your total is the sum of all your poll points and all your final points. Because a final bet counts for every week it stood, guessing right early simply banks more scored weeks — there's no artificial early-bird bonus.",
-  "rules.lbTie": "Tie-breakers, in order: higher total score, then final-bet score, then lower cumulative final-bet error, and finally whoever bet earliest.",
-
-  "rules.fairTitle": "Fair play",
-  "rules.fairBody": "Your score depends only on your own error — never on other players' bets. There's no advantage to gaming it: just guess what you honestly believe will happen. You can't copy the leaders (bets are hidden until the lock), and you can't snipe the poll average (bets lock before the measured polling window even opens).",
-
+  "rules.pollsTitle": "Which polls count",
+  "rules.pollsBody": "The week's average is computed from every poll published from one Friday to the next — a window that closes exactly when bets lock. Every approved poll in that window counts once, equally weighted, regardless of sample size.",
   "rules.voidTitle": "A week with no polls",
   "rules.voidBody": "If no poll is published in a given week (it happens around holidays and during the pre-election blackout) — that week's poll bets simply aren't scored. You don't get a 0, and you lose nothing.",
-
   "rules.cta": "Alright, start guessing",
-
   "login.lead": "Sign in, pick a handle, start guessing. No passwords, promise.",
   "login.google": "Sign in with Google",
   "login.or": "or with a magic link by email",
@@ -135,7 +111,6 @@
   "login.twitter": "X handle (optional)",
   "login.saveHandle": "Save and start",
   "login.saveError": "⚠️ Saving failed: {msg}",
-
   "bets.finalTitle": "The final bet — what happens on election day?",
   "bets.pollTitle": "The poll bet — what will this week's average be?",
   "bets.weekTitle": "Week {n} · {from}–{to}",
@@ -148,7 +123,6 @@
   "bets.saved": "🎉 Bet saved!",
   "bets.saveError": "⚠️ Saving failed: {msg}",
   "bets.copyFinal": "Copy from the final bet",
-  "bets.prefillAvg": "Start from last week's average",
   "bets.carried": "⚠️ This is your bet from week {n}, carried automatically — edit it to update.",
   "bets.carriedUnknown": "⚠️ This is a carried bet from a previous week — edit it to update.",
   "bets.lockLead": "⏱️ Bets lock in:",
@@ -160,9 +134,10 @@
   "bets.noBet": "No bet was submitted for this week.",
   "bets.errLocked": "The week is already locked — the bet was not saved.",
   "bets.errSum": "The total must be exactly 120.",
-
   "polls.title": "The Polls",
-  "polls.lead": "All approved polls, freshest first. A poll belongs to a week by its last fieldwork day.",
+  "polls.lead": "All approved polls, freshest first. The weekly average counts every poll published from Friday to Friday.",
+  "polls.viewChart": "Chart",
+  "polls.viewTable": "Table",
   "polls.colDate": "Date",
   "polls.colPollster": "Pollster",
   "polls.colPublisher": "Publisher",
@@ -171,7 +146,6 @@
   "polls.avgNone": "No polls this week",
   "polls.subThreshold": "Below the electoral threshold — counted as 0 in the average",
   "polls.empty": "No approved polls yet. The robot is already on its way to Wikipedia.",
-
   "lb.title": "Leaderboard",
   "lb.colRank": "#",
   "lb.colPlayer": "Player",
@@ -182,7 +156,6 @@
   "lb.colPerWeek": "Pts/week",
   "lb.note": "A final bet is worth roughly 2.5× a poll bet on average — full explanation in the rules.",
   "lb.empty": "No scores yet — the first bets lock on Friday.",
-
   "archive.title": "Weekly Archive",
   "archive.lead": "After the lock everything is public: the average, the bets, and the scores.",
   "archive.pickWeek": "Pick a week",
@@ -198,7 +171,6 @@
   "archive.kindPoll": "Polls",
   "archive.empty": "No locked weeks yet — all is revealed after Friday.",
   "archive.noBets": "No bets for this week.",
-
   "profile.title": "My Profile",
   "profile.publicTitle": "Profile",
   "profile.displayName": "Display name",
@@ -219,7 +191,6 @@
   "profile.noHistory": "No history yet — the first score lands after the week closes.",
   "profile.notFound": "No such profile 🤷",
   "profile.notLoggedIn": "You need to log in to see your profile.",
-
   "admin.title": "Admin",
   "admin.denied": "This page is for admins only.",
   "admin.tabPolls": "Poll queue",

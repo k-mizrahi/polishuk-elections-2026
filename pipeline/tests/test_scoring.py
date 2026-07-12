@@ -22,8 +22,8 @@ def test_doc02_example_a_poll_bet_vs_fractional_average():
     # rest-of-map identical: restrict to these parties
     e = absolute_error(bet, avg, Partition([]))
     assert abs(e - (1.33 + 1.33 + 0 + 0.33)) < 1e-9
-    # with the doc's assumed remaining error of 7.7 -> E = 10.7 -> 19.3
-    assert bet_score(e + 7.71, "poll") == 19.3
+    # with the doc's assumed remaining error of 7.7 -> E = 10.7 -> 89.3
+    assert bet_score(e + 7.71, "poll") == 89.3
 
 
 def test_doc02_example_b_merger_scored_as_bloc():
@@ -51,10 +51,10 @@ def test_weekly_average_void_week():
 
 
 def test_score_floors_at_zero_and_rounds():
-    assert bet_score(35, "poll") == 0.0
-    assert bet_score(10.66, "poll") == 19.3
-    assert bet_score(10, "final") == 80.0
-    assert bet_score(60, "final") == 0.0
+    assert bet_score(105, "poll") == 0.0      # cap 100 -> floors only past 100
+    assert bet_score(10.66, "poll") == 89.3
+    assert bet_score(10, "final") == 140.0
+    assert bet_score(160, "final") == 0.0     # cap 150
 
 
 def test_compute_all_void_week_and_unscored_finals():
@@ -69,7 +69,7 @@ def test_compute_all_void_week_and_unscored_finals():
     assert avgs[1] == {"likud": 28.0} and avgs[2] == {}
     kinds = [(s.week_id, s.kind) for s in scores]
     assert kinds == [(1, "poll")]      # void week + pre-election finals skipped
-    assert scores[0].error == 2 and scores[0].score == 28.0
+    assert scores[0].error == 2 and scores[0].score == 98.0
 
 
 def test_compute_all_finals_scored_every_week_after_results():
@@ -80,7 +80,7 @@ def test_compute_all_finals_scored_every_week_after_results():
     _, scores = compute_all(polls_by_week={}, bets=bets, transitions=[],
                             official_results={"likud": 32, "shas": 88})
     assert len(scores) == 3
-    assert all(s.error == 4 and s.score == 92.0 for s in scores)
+    assert all(s.error == 4 and s.score == 146.0 for s in scores)
 
 
 def test_recompute_is_deterministic():

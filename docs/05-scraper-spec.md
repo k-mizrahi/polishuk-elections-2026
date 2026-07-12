@@ -47,7 +47,7 @@ Per year-table, per row:
 3. **Dates.** Fieldwork cell parsed to `(fieldwork_start, fieldwork_end)`; handles single dates ("9 Jul"), same-month ranges ("10–12 Jul" — the start inherits the end's month), cross-month ranges ("30 Jun – 3 Jul") and Dec→Jan crossings, with the table's year-section as context; all dash variants accepted. Unparseable → `pending`.
 4. **Row validation.** Σ(party seats) + Others = **exactly 120** (tolerance 0); "Gov." parsed and used **only as a checksum** against the sum of mapped coalition parties (mismatch → `pending`, note the delta; the set of coalition parties is an alias-table-style config, not hardcoded).
 5. **Fingerprint & dedupe.** `row_fingerprint = sha256(pollster | fieldwork_end | sorted "(party_code:seats)" vector)`. Unseen fingerprint → insert. Seen and identical → skip.
-6. **Week assignment.** `game_week_id` = the game week whose [Sunday, Saturday] contains `fieldwork_end`; polls before the first game week get `null` (displayed, never scored).
+6. **Week assignment.** `game_week_id` = the game week whose [Friday, Thursday] window contains `fieldwork_end` (R7, docs/09); polls before the first game week get `null` (displayed, never scored).
 7. **Status routing.**
    - Clean row → `status = 'approved'` directly (no human in the loop for the ~95% happy path).
    - Failed sum/date/cell checks → `status = 'pending'`, anomaly description in `admin_note`.

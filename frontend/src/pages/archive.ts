@@ -1,7 +1,7 @@
 import { partyName, t } from '../lib/i18n'
 import { activeParties, fetchParties, fetchWeeks, supabase, weekNumber } from '../lib/supabase'
 import { callout, card, el, fmtDate, initPage, ltr, partyChip, skeleton, wideTable } from '../lib/ui'
-import type { Bet, BetLine, GameWeek, Party, Score, WeeklyAverage } from '../lib/database.types'
+import type { Bet, BetKind, BetLine, GameWeek, Party, Score, WeeklyAverage } from '../lib/database.types'
 
 type PublicBet = Bet & { bet_lines: BetLine[]; profiles: { handle: string | null } | null }
 
@@ -76,17 +76,21 @@ async function renderWeek(parties: Party[], week: GameWeek, content: HTMLElement
       : callout('amber', t('archive.notScored')),
   )
 
-  // --- everyone's bets with scores, sortable by score
+  // --- everyone's bets with scores; poll/final toggle + sortable by score
   const scoreOf = new Map(scores.map((s) => [`${s.user_id}:${s.kind}`, s]))
   let sortDesc = true
+  let kind: BetKind = 'final' // the real game is the default view
   const tableHost = el('div', {})
+  const toggle = el('div', { class: 'inline-flex rounded-xl bg-slate-100 p-1 mb-4' })
 
   const renderTable = () => {
-    const sorted = [...bets].sort((a, b) => {
-      const sa = scoreOf.get(`${a.user_id}:${a.kind}`)?.score ?? -1
-      const sb = scoreOf.get(`${b.user_id}:${b.kind}`)?.score ?? -1
-      return sortDesc ? sb - sa : sa - sb
-    })
+    const sorted = bets
+      .filter((b) => b.kind === kind)
+      .sort((a, b) => {
+        const sa = scoreOf.get(`${a.user_id}:${a.kind}`)?.score ?? -1
+        const sb = scoreOf.get(`${b.user_id}:${b.kind}`)?.score ?? -1
+        return sortDesc ? sb - sa : sa - sb
+      })
     const scoreHeader = el(
       'button',
       { class: 'font-bold text-blue-900 hover:underline', onclick: () => { sortDesc = !sortDesc; renderTable() } },
@@ -99,7 +103,6 @@ async function renderWeek(parties: Party[], week: GameWeek, content: HTMLElement
         b.profiles?.handle
           ? el('a', { href: `profile.html?u=${encodeURIComponent(b.profiles.handle)}`, class: 'text-blue-700 font-bold hover:underline' }, b.profiles.handle)
           : '–',
-        t(b.kind === 'final' ? 'archive.kindFinal' : 'archive.kindPoll'),
         b.is_carried ? '⟳' : '',
         ...columns.map((p) => (lineById.has(p.id) ? ltr(String(lineById.get(p.id))) : '–')),
         s ? ltr(Number(s.error).toFixed(2)) : '–',
@@ -107,18 +110,32 @@ async function renderWeek(parties: Party[], week: GameWeek, content: HTMLElement
       ]
     })
     tableHost.replaceChildren(
-      bets.length
+      sorted.length
         ? wideTable(
-            [t('archive.colPlayer'), t('archive.colKind'), t('archive.colCarried'), ...columns.map(partyHeader), t('archive.colError'), scoreHeader],
+            [t('archive.colPlayer'), t('archive.colCarried'), ...columns.map(partyHeader), t('archive.colError'), scoreHeader],
             rows,
           )
         : el('p', { class: 'text-slate-600' }, t('archive.noBets')),
     )
   }
+
+  const renderToggle = () => {
+    const mk = (k: BetKind, label: string) =>
+      el(
+        'button',
+        {
+          class: `rounded-lg px-4 py-1.5 text-sm font-bold transition ${k === kind ? 'bg-white text-blue-900 shadow' : 'text-slate-600 hover:text-blue-900'}`,
+          onclick: () => { kind = k; renderToggle(); renderTable() },
+        },
+        label,
+      )
+    toggle.replaceChildren(mk('final', t('archive.kindFinal')), mk('poll', t('archive.kindPoll')))
+  }
+  renderToggle()
   renderTable()
 
   content.replaceChildren(
     avgCard,
-    card(el('h2', { class: 'text-blue-900 font-extrabold text-xl mb-3' }, t('archive.betsTitle')), tableHost),
+    card(el('h2', { class: 'text-blue-900 font-extrabold text-xl mb-3' }, t('archive.betsTitle')), toggle, tableHost),
   )
 }
