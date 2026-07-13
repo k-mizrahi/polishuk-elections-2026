@@ -1,6 +1,4 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# CLAUDE.md — Polishuk Elections
 
 ## Start here: handoffs
 
@@ -58,3 +56,13 @@ npm run build      # tsc --noEmit + vite build; must stay clean
 Migrations apply over the session pooler (`aws-0-eu-central-1.pooler.supabase.com:5432`, user `postgres.tcljueekscqccgswlgxb`, password in `~/.polishuk_db_password`) with psycopg from the venv — there is no supabase CLI setup; procedure in docs/06. New tables/functions need explicit grants (see `0002_grants.sql`) because direct-connection DDL skips dashboard default privileges.
 
 Deployment is push-to-main: CI (`test.yml`) runs pytest + SQL parse; `deploy-pages.yml` rebuilds the site (frontend changes only — dispatch it manually after changing repo variables). Scraper fixture policy: when Wikipedia's format drifts, commit the new API snapshot to `pipeline/fixtures/` first, then fix the parser against it.
+
+<!-- claude-config:pointer -->
+## Personal Claude config
+
+This project follows my shared Claude Code config in **`~/claude-config`**
+([github.com/k-mizrahi/claude-config](https://github.com/k-mizrahi/claude-config)).
+Global skills and the Dugri output style are installed into `~/.claude`; reusable
+conventions live in that repo's `snippets/` and `project-template/`. To sync a
+machine: `~/claude-config/install.sh`.
+<!-- /claude-config:pointer -->
