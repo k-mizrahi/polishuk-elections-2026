@@ -8,7 +8,8 @@ All times Asia/Jerusalem. Game week *w* runs **Friday–Thursday** (R7, docs/09)
 
 | When | What | Who |
 |---|---|---|
-| continuous, every 6h | Scrape polls; auto-approve clean rows; queue anomalies | `scrape.yml` |
+| continuous, every 6h | Scrape polls; auto-approve clean rows; queue anomalies; stamp `last_scrape_ok_at` heartbeat | `scrape.yml` |
+| continuous, every 3h | **Freshness watchdog** — heartbeat/backlog/outlet checks; files a GitHub issue on breach | `watchdog.yml` |
 | **Friday 12:00** | Lock instant for week *w* bets — nothing *runs*; RLS/trigger predicates over `lock_at` flip write-access off and visibility on | Postgres |
 | Friday ~12:05 | **Weekly close job**: (1) mark week *w−1* `locked`→bookkeeping, week *w* `open`→`locked`… precisely: transition statuses so *w* is locked and *w+1* is `open`; (2) **carry forward** — for each player and kind with a bet history but no week-(*w+1*) bet, clone the latest bet with `is_carried = true`, remapped through `party_transitions`; (3) compute **provisional** averages/scores for completed weeks | `weekly-close.yml` |
 | **Wednesday ~12:00** | **Finalize run**: recompute everything (doc 02 §8) — by now late-published weekend polls have reached Wikipedia; this run also doubles as a catch-up sweep if Friday's run failed | `weekly-close.yml` |
@@ -41,6 +42,48 @@ Historical note: pre-merger polls remain stored against predecessor parties — 
 - **Wikipedia edited a poll**: scraper inserts the new version as `pending` with a diff (doc 05 §7). Admin: review diff → approve new version → old one auto-marked `rejected` (implemented as part of approve) → Wednesday recompute self-heals scores.
 - **Admin-spotted error**: edit the poll's `poll_results` rows in the console (audit-logged) → trigger `recompute.yml`.
 - Announce score changes in the site announcement (`app_settings['announcement']`) if the leaderboard visibly reshuffles.
+
+## Runbook: freshness watchdog
+
+`watchdog.yml` (every 3h) runs `cli.py watchdog` — checks that fail *silently*
+otherwise (a scrape that never ran leaves no error, no issue). On any breach it
+exits 1 and the workflow files/comments a single rolling **"Freshness watchdog"**
+GitHub issue; the specific alerts are in the run summary. Logic is pure and
+tested in `pipeline/tests/test_watchdog.py`; thresholds live in code
+(`watchdog.DEFAULTS`) and are overridable at runtime via `app_settings['watchdog_config']`.
+
+Alerts are **self-clearing** — fix the gap and the next run goes green.
+
+| Alert code | Means | Response |
+|---|---|---|
+| `stale_scrape` | No successful scrape in > 12h (heartbeat `last_scrape_ok_at`) | Scrape cron disabled (GitHub disables schedules after 60d inactivity — push any commit to re-enable), Supabase paused, or runs failing. Check the Actions tab / `scrape.yml`. |
+| `stale_polls` | Newest approved poll > 9d old | Check Wikipedia for polls we haven't ingested; hand-enter if the scraper missed one. |
+| `review_backlog` | Pending rows unreviewed > 36h | Clear the poll review queue (weekly checklist #2) before the Wednesday finalize. |
+| `outlet_ahead` | N12 republished its polls page but we ingested nothing within 18h | Wikipedia may be lagging a poll N12 already published — check the EN polling page for a missing row. |
+| `outlet_unreachable` | A normally-open outlet (N12) can't be fetched | Usually transient; if persistent, the outlet restructured — see `watchdog.OUTLETS`. |
+| `outlet_now_reachable` | A known-blocked outlet (Kan) became reachable | Opportunity: Kan is Cloudflare-walled today; if it opens up, wire it into `OUTLETS`. |
+
+Watched outlets are a *tripwire only* — we never ingest their numbers (copyright +
+unstable shape). N12's `story.json` `Last-Modified` is the signal; Kan is
+`expected_blocked` (Cloudflare Error 1000S from CI) so it stays quiet, and its
+polls are Kantar-commissioned and already reach us via Wikipedia anyway.
+
+### Cross-source spot-check (N12 structured API)
+
+N12's elections widget is backed by a real JSON endpoint —
+`https://mako_elections.devdinocdn.com/Home/GetSurveysData` (`data.surveys[]`,
+each `{surveyCreatorId, surveyDate, surveyResults:[{partyId,result}]}`; parties
+and creators in sibling arrays). No auth, no Cloudflare wall. Useful to
+**validate** Wikipedia numbers by hand (do NOT ingest — same copyright/shape
+reasons). A 2026-07-14 audit matched all 74 same-pollster/same-date pairs to the
+seat after reconciling two **classification** differences below.
+
+**Known bloc-classification differences vs N12 (not data errors):**
+- **Ra'am**: our `registry.py` folds Ra'am into the `joint_list` bloc; N12 lists
+  it separately. Component seats reconcile to our bloc total on recent polls.
+  Whether Ra'am should be its own bettable line is a scoring-semantics question
+  (docs/02 §6) — flagged, not yet decided.
+- **Tropper-Handel = Yesodot**: same party, different label across sources.
 
 ## Runbook: election night 🗳️
 

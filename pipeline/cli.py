@@ -1,9 +1,10 @@
 """Pipeline entrypoints — run by GitHub Actions (docs/03), debuggable locally.
 
 Usage:
-  python cli.py scrape  [--dry-run]      # fetch Wikipedia -> ingest new polls
-  python cli.py close   [--dry-run]      # week status flips + carry-forward + score
-  python cli.py score   [--dry-run]      # full scoring recompute (docs/02 §8)
+  python cli.py scrape   [--dry-run]     # fetch Wikipedia -> ingest new polls
+  python cli.py close    [--dry-run]     # week status flips + carry-forward + score
+  python cli.py score    [--dry-run]     # full scoring recompute (docs/02 §8)
+  python cli.py watchdog [--dry-run]     # freshness/heartbeat checks (docs/06)
   python cli.py seed-sql                 # print seed.sql from registry.py
 
 --dry-run prints intended writes instead of performing them. `scrape --dry-run`
@@ -34,6 +35,8 @@ def cmd_scrape(dry_run: bool) -> int:
         if db.get_setting("last_scraped_revid") == revid:
             print(f"revid {revid} unchanged — nothing to do")
             db.get("app_settings", select="key", limit="1")  # keep-alive
+            db.set_setting("last_scrape_ok_at",
+                           datetime.now(timezone.utc).isoformat())  # heartbeat
             return 0
         alias_rows = db.get("party_aliases", select="alias,parties(code)")
         alias_map = {scraper.normalize_header(r["alias"]): r["parties"]["code"]
@@ -80,6 +83,8 @@ def cmd_scrape(dry_run: bool) -> int:
         inserted = db.rpc("ingest_polls", {"p_polls": payload})
         print(f"ingested {inserted}")
     db.set_setting("last_scraped_revid", revid)
+    db.set_setting("last_scrape_ok_at",
+                   datetime.now(timezone.utc).isoformat())  # heartbeat (docs/06)
     if n_pending:
         print(f"::warning::{n_pending} polls awaiting admin review")
     return 0
@@ -203,6 +208,27 @@ def cmd_score(dry_run: bool) -> int:
     return 0
 
 
+# ------------------------------------------------------------ watchdog
+
+def cmd_watchdog(dry_run: bool) -> int:
+    """Freshness/heartbeat checks (docs/06). Exit 1 on any alert so the
+    workflow's failure handler files a GitHub issue. State is persisted every
+    run (even when alerting) so the outlet moved/caught-up handshake advances."""
+    from db import Supa
+    import watchdog
+    db = Supa()
+    alerts, new_state = watchdog.run_checks(db)
+    if not dry_run:
+        db.set_setting("watchdog_state", new_state)
+    if not alerts:
+        print("watchdog: all clear")
+        return 0
+    print(f"watchdog: {len(alerts)} alert(s)")
+    for a in alerts:
+        print(f"::warning::{a}")
+    return 1
+
+
 # ------------------------------------------------------------ seed
 
 def _q(s: str) -> str:
@@ -243,4 +269,5 @@ if __name__ == "__main__":
     sys.exit({"scrape": lambda: cmd_scrape(dry),
               "close": lambda: cmd_close(dry),
               "score": lambda: cmd_score(dry),
+              "watchdog": lambda: cmd_watchdog(dry),
               "seed-sql": cmd_seed_sql}[cmd]())

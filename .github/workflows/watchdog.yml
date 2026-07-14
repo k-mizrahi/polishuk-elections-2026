@@ -1,0 +1,39 @@
+name: watchdog
+on:
+  schedule:
+    - cron: "37 */3 * * *"   # every 3h, offset from the 6h scrape cron
+  workflow_dispatch: {}
+
+# Detects the silent gaps a failed scrape can't report: a cron that never ran
+# (heartbeat stale), Wikipedia lagging an outlet (N12 republished, we didn't
+# ingest), or a review backlog before the Wednesday finalize. See pipeline/watchdog.py.
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ./pipeline
+      - name: Run freshness watchdog
+        working-directory: pipeline
+        run: python cli.py watchdog | tee "$GITHUB_STEP_SUMMARY"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: File an issue on breach
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh issue list --state open --search "Freshness watchdog" --json number --jq '.[0].number' || true)
+          run="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          body="Watchdog breach — specific alerts are in the run summary: $run"
+          if [ -n "$n" ]; then
+            gh issue comment "$n" --body "$body"
+          else
+            gh issue create --title "Freshness watchdog $(date -u +%F)" \
+              --body "$body"$'\n\n'"Triage: docs/06 (freshness watchdog). Alerts are self-clearing once the underlying gap is resolved."
+          fi
