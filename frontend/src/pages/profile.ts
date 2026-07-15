@@ -20,7 +20,8 @@ if (!supabase) {
 async function main(): Promise<void> {
   const isPublic = requestedHandle !== null && requestedHandle !== ctx.profile?.handle
   if (isPublic) {
-    const { data } = await supabase!.from('profiles').select('*').eq('handle', requestedHandle!).maybeSingle()
+    // public_profiles: only non-sensitive columns are readable for other users
+    const { data } = await supabase!.from('public_profiles').select('*').eq('handle', requestedHandle!).maybeSingle()
     const profile = data as Profile | null
     if (!profile) {
       root.replaceChildren(card(el('p', { class: 'text-slate-600' }, t('profile.notFound'))))

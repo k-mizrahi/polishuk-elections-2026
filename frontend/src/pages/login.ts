@@ -81,7 +81,7 @@ function showOnboarding(): void {
     }
     setStatus(t('login.handleChecking'), 'text-slate-500', false)
     checkTimer = window.setTimeout(async () => {
-      const { data } = await supabase!.from('profiles').select('id').eq('handle', h).maybeSingle()
+      const { data } = await supabase!.from('public_profiles').select('id').eq('handle', h).maybeSingle()
       if (handleInput.value.trim() !== h) return // stale response
       if (data) setStatus(t('login.handleTaken'), 'text-red-600', false)
       else setStatus(t('login.handleFree'), 'text-emerald-700', true)

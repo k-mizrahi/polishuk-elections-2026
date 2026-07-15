@@ -104,6 +104,18 @@ def test_unmapped_party_column_aborts():
         scraper.parse_page(html, aliases, min_year=2026)
 
 
+@pytest.mark.parametrize("span_attr", [
+    'colspan="2000000000"',   # unbounded → would OOM the grid
+    'rowspan="500000000"',
+    'colspan="lots"',         # non-numeric → clean abort, not ValueError
+])
+def test_expand_grid_rejects_implausible_span(span_attr):
+    from bs4 import BeautifulSoup
+    table = BeautifulSoup(f"<table><tr><td {span_attr}>x</td></tr></table>", "lxml").find("table")
+    with pytest.raises(scraper.ScraperError, match="span"):
+        scraper.expand_grid(table)
+
+
 @pytest.mark.parametrize("text,year,expected", [
     ("9 Jul", 2026, (None, date(2026, 7, 9))),
     ("10–12 Jul", 2026, (date(2026, 7, 10), date(2026, 7, 12))),

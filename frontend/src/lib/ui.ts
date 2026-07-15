@@ -28,6 +28,21 @@ export function el<K extends keyof HTMLElementTagNameMap>(
   return node
 }
 
+/**
+ * Return the URL only if it is an http/https link, else null. Guards against
+ * `javascript:`/`data:` URIs reaching an <a href> — poll source_url comes from
+ * the (untrusted, openly-editable) Wikipedia scraper and is clicked by the admin.
+ */
+export function safeHttpUrl(u: string | null | undefined): string | null {
+  if (!u) return null
+  try {
+    const proto = new URL(u, location.origin).protocol
+    return proto === 'http:' || proto === 'https:' ? u : null
+  } catch {
+    return null
+  }
+}
+
 /** Mixed-direction safety: numbers/handles/URLs inside RTL text. */
 export function ltr(text: string | number): HTMLElement {
   return el('span', { dir: 'ltr' }, String(text))

@@ -144,8 +144,18 @@ def expand_grid(table: Tag) -> list[list[Cell]]:
             for sup in td.find_all("sup"):  # strip footnote refs
                 sup.decompose()
             cell = Cell(td.get_text(" ", strip=True), td.name == "th")
-            rs = int(td.get("rowspan") or 1)
-            cs = int(td.get("colspan") or 1)
+            try:
+                rs = int(td.get("rowspan") or 1)
+                cs = int(td.get("colspan") or 1)
+            except ValueError:
+                raise ScraperError(
+                    f"non-numeric cell span rowspan={td.get('rowspan')!r} "
+                    f"colspan={td.get('colspan')!r}")
+            if not (1 <= rs <= 100 and 1 <= cs <= 200):
+                # Untrusted Wikipedia HTML: an unbounded span would blow up the
+                # grid (memory-exhaustion DoS). Real poll tables never span this
+                # much — fail loud like any other layout drift.
+                raise ScraperError(f"implausible cell span rowspan={rs} colspan={cs}")
             for r in range(row_idx, row_idx + rs):
                 while len(grid) <= r:
                     grid.append([])

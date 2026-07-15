@@ -1,6 +1,6 @@
 import { partyName, t } from '../lib/i18n'
 import { fetchParties, supabase } from '../lib/supabase'
-import { BTN, BTN_SM, callout, card, el, fmtDate, initPage, ltr, partyChip, seatForm, skeleton, wideTable } from '../lib/ui'
+import { BTN, BTN_SM, callout, card, el, fmtDate, initPage, ltr, partyChip, safeHttpUrl, seatForm, skeleton, wideTable } from '../lib/ui'
 import type { OfficialResult, Party, Poll, PollResult, Profile } from '../lib/database.types'
 
 type PendingPoll = Poll & { poll_results: PollResult[] }
@@ -134,8 +134,8 @@ function pendingPollCard(poll: PendingPoll, parties: Party[], order: Map<number,
       el('h3', { class: 'text-blue-900 font-extrabold' }, `${poll.pollster}${poll.publisher ? ` · ${poll.publisher}` : ''}`),
       el('span', { class: 'text-sm text-slate-500' }, ltr(fmtDate(poll.fieldwork_end)), poll.sample_size ? ` · ${t('admin.sample', { n: poll.sample_size })}` : ''),
     ),
-    poll.source_url
-      ? el('a', { href: poll.source_url, target: '_blank', rel: 'noopener', class: 'text-blue-700 text-sm hover:underline' }, t('admin.source'))
+    safeHttpUrl(poll.source_url)
+      ? el('a', { href: safeHttpUrl(poll.source_url)!, target: '_blank', rel: 'noopener', class: 'text-blue-700 text-sm hover:underline' }, t('admin.source'))
       : null,
     poll.admin_note ? el('div', { class: 'my-2' }, callout('amber', poll.admin_note)) : null,
     el('div', { class: 'flex flex-wrap gap-3 my-4' }, seatCells),

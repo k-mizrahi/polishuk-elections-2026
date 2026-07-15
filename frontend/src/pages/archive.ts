@@ -53,12 +53,21 @@ async function renderWeek(parties: Party[], week: GameWeek, content: HTMLElement
   content.replaceChildren(card(skeleton(6)))
   const [avgRes, betsRes, scoresRes] = await Promise.all([
     supabase!.from('weekly_averages').select('*').eq('week_id', week.id),
-    supabase!.from('bets').select('*, bet_lines(*), profiles(handle)').eq('week_id', week.id),
+    supabase!.from('bets').select('*, bet_lines(*)').eq('week_id', week.id),
     supabase!.from('scores').select('*').eq('week_id', week.id),
   ])
   const averages = (avgRes.data ?? []) as WeeklyAverage[]
   const bets = (betsRes.data ?? []) as PublicBet[]
   const scores = (scoresRes.data ?? []) as Score[]
+
+  // Attribute each bet to a handle via the public view — base-table RLS hides
+  // other users' profile rows, so the old profiles(handle) embed returns null.
+  const betUserIds = [...new Set(bets.map((b) => b.user_id))]
+  if (betUserIds.length) {
+    const { data: profRows } = await supabase!.from('public_profiles').select('id, handle').in('id', betUserIds)
+    const handleById = new Map(((profRows ?? []) as { id: string; handle: string | null }[]).map((p) => [p.id, p.handle]))
+    for (const b of bets) b.profiles = { handle: handleById.get(b.user_id) ?? null }
+  }
 
   const usedIds = new Set([...averages.map((a) => a.party_id), ...bets.flatMap((b) => b.bet_lines.map((l) => l.party_id))])
   const columns = parties.filter((p) => usedIds.has(p.id) || activeParties([p], week).length > 0)
