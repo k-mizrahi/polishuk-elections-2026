@@ -7,14 +7,13 @@ mediums, plus lows. Fixed the critical, one high, and both mediums in code. No
 scoring-math changes. **No live-DB changes this session** — two new migrations
 are written but NOT yet applied.
 
-> **Status at session close:** committed on branch `freshness-watchdog` (the
-> security commit — see `git log`; 6 files + 2 migrations + this handoff).
-> Pipeline suite **55/55**;
-> `npm run build` clean (tsc + vite). **Migration 0004 APPLIED to live DB this
-> session** (trigger `bet_lines_guard` present + enabled) — the critical hole is
-> closed in prod. **Migration 0005 NOT applied** — it must ship in lockstep with
-> the frontend deploy (tightened RLS breaks the currently-deployed archive/
-> profile reads until the new JS is live). Mock data from 2026-07-13 still up.
+> **Status at session close:** SHIPPED. Security work merged to **main** and
+> deployed (Pages `deploy-pages` green, `test` green). **Both migrations 0004 +
+> 0005 APPLIED to live DB** and the new frontend is live — done in lockstep, so
+> no RLS/frontend gap. Verified in prod via the anon key: `profiles?is_admin=
+> eq.true` → `[]` (enumeration dead), `public_profiles` returns handles with no
+> sensitive columns. Pipeline suite **55/55**; build clean. Mock data from
+> 2026-07-13 still up (teardown still pending before real launch).
 
 ## Where things stand
 
@@ -92,20 +91,17 @@ are written but NOT yet applied.
 
 ## Next steps, in order
 
-1. ✅ **DONE this session:** 0004 applied to live DB; scraper span-clamp test
-   added (suite 55/55); work committed on `freshness-watchdog`.
-2. **Apply migration 0005, THEN deploy the frontend — as one coordinated step**
-   (blocked on user go-ahead for the outward-facing deploy). Order is mandatory:
-   apply 0005 over the pooler, then merge `freshness-watchdog` → main so
-   `deploy-pages.yml` ships the new JS. If the site is deployed *before* 0005, or
-   0005 is applied *before* the deploy, the archive page and public profile pages
-   break in the gap. Recommend a low-traffic window; gap should be seconds.
-3. **Decide the poll approve-on-review process** (the open HIGH). Recommended
+1. ✅ **DONE this session:** 0004 + 0005 applied to live DB; frontend merged to
+   main and deployed (Pages green); scraper span-clamp test added (55/55);
+   enumeration fix verified in prod via anon key. The whole security batch is
+   live. `freshness-watchdog` == `main` at the security commit.
+2. **Decide the poll approve-on-review process** (the open HIGH — the one
+   remaining game-integrity item). Recommended
    shape: promote the N12 `GetSurveysData` feed from validate-only to a
    *corroboration gate* — auto-approve only polls that match an N12 record, else
    → review queue. Blocked on the Ra'am/Joint List bloc mapping decision (below),
    which must land first or cross-checks mismatch spuriously. **Do not build yet.**
-4. **Deferred lows (deliberately not done — rationale):** `security_invoker=on`
+3. **Deferred lows (deliberately not done — rationale):** `security_invoker=on`
    on `leaderboard` is **incompatible with 0005** (the view needs owner rights to
    read all profiles for the board) — leave as-is; `first_bet_at` can't be dropped
    (it's the leaderboard tiebreaker sort). `force row level security` skipped —
@@ -113,25 +109,28 @@ are written but NOT yet applied.
    `profiles`; forcing RLS could recurse). Worth doing: pin GH Actions to SHAs on
    the secret-bearing workflows; validate `twitter_handle`/`party.color` on save
    (needs he/en i18n error strings).
-5. **Add a behavioral trigger test** — 0004/0005 are only DDL-verified. A real
-   test needs a Postgres+JWT (PostgREST) harness; a direct-postgres probe is
-   unfaithful because `auth.role()` is NULL there and the guard's
-   `auth.role() <> 'service_role'` short-circuits. No such harness exists yet.
-6. Carried over: ratify the Ra'am/Joint List bloc question; `scripts/mock_data.py
+4. **Add a behavioral trigger test** — 0004/0005 are only DDL-verified (0005's
+   enumeration block was also verified live via the anon key; 0004's lock was
+   not exercised end-to-end). A real trigger test needs a Postgres+JWT (PostgREST)
+   harness; a direct-postgres probe is unfaithful because `auth.role()` is NULL
+   there and the guard's `auth.role() <> 'service_role'` short-circuits. No such
+   harness exists yet.
+5. Carried over: ratify the Ra'am/Joint List bloc question; `scripts/mock_data.py
    teardown` before launch.
 
 ## Operational cautions
 
-- **Apply 0005 BEFORE deploying the frontend.** The frontend now reads
-  `public_profiles` and tightened `profiles` RLS; if the view doesn't exist yet,
-  the public profile page and archive bet-attribution break. Migration first,
-  Pages deploy second.
-- **The critical is live until 0004 is applied.** Until then, treat any post-lock
-  bet as potentially mutable — if a scored week looks off, check `bet_lines`
-  against expectations. (No evidence of exploitation; the game may not be public.)
+- **The 0005↔frontend coupling is now satisfied (both live) — but remember it
+  for the future.** If you ever roll back the frontend to a pre-2026-07-15 build,
+  it will break against the tightened `profiles` RLS (old JS reads `profiles`
+  directly for archive/public-profile). Any such rollback must also revert 0005.
 - **Do not build the approve-on-review poll gate yet** — Kobi is deciding the
   process. And do not flip `cli.py` poll default to `pending` unilaterally.
 - **Still no ingest of outlet numbers** (N12/Kan) — validation/corroboration only,
   per 2026-07-14. That constraint stands even if N12 becomes an approve gate.
-- Nothing was committed or pushed; no live DB touched. A future session can
-  verify all claims from `git diff` + the two new migration files.
+- The critical `bet_lines` lock (0004) is live but was NOT exercised end-to-end
+  (DDL-verified only). If a scored week ever looks off, check `bet_lines` for
+  post-lock mutation as a first diagnostic.
+- All claims here verifiable from `git log` on main + the two migration files +
+  the applied-state of the live DB (`bet_lines_guard` trigger, `public_profiles`
+  view).
