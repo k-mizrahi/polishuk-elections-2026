@@ -92,9 +92,10 @@ async function render(): Promise<void> {
 
 // ---------------------------------------------------------------- SVG trend chart
 
-const SVGNS = 'http://www.w3.org/2000/svg'
+// no `const SVGNS` here: this function is called during the module's top-level
+// `await render()`, before consts below the await would initialize (TDZ).
 function s<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string | number> = {}, ...kids: (Node | string)[]): SVGElementTagNameMap[K] {
-  const n = document.createElementNS(SVGNS, tag)
+  const n = document.createElementNS('http://www.w3.org/2000/svg', tag)
   for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v))
   for (const c of kids) n.append(c)
   return n
