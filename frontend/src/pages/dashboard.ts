@@ -9,6 +9,9 @@ type Mode = 'parties' | 'block'
 /** A line on the chart: label + color + a per-poll value. */
 type Series = { label: string; color: string; value: (p: PollWithResults) => number }
 
+/** One chart point: all selected-pollster polls of one Friday-to-Friday week. */
+type WeekBucket = { start: number; label: string; polls: PollWithResults[] }
+
 const root = document.getElementById('root')!
 await initPage('dashboard')
 
@@ -27,6 +30,19 @@ function seatsOf(poll: PollWithResults, partyId: number): number {
   const r = poll.poll_results.find((x) => x.party_id === partyId)
   if (!r || r.below_threshold) return 0
   return Number(r.seats)
+}
+
+/** Group polls into Friday-to-Friday weeks (the game's average window), oldest first. */
+function weekBuckets(polls: PollWithResults[]): WeekBucket[] {
+  const byStart = new Map<number, PollWithResults[]>()
+  for (const p of polls) {
+    const d = new Date(p.fieldwork_end)
+    const start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - ((d.getUTCDay() - 5 + 7) % 7))
+    byStart.set(start, [...(byStart.get(start) ?? []), p])
+  }
+  return [...byStart.entries()]
+    .map(([start, ps]) => ({ start, label: t('dashboard.weekOf', { date: fmtDate(new Date(start).toISOString()) }), polls: ps }))
+    .sort((a, b) => a.start - b.start)
 }
 
 async function render(): Promise<void> {
@@ -147,6 +163,7 @@ async function render(): Promise<void> {
       chartHost.replaceChildren(callout('amber', t('dashboard.noMatch')))
       return
     }
+    const buckets = weekBuckets(shown)
     const count = el('p', { class: 'text-sm text-slate-500 mb-2' }, t('dashboard.nPolls', { n: shown.length }))
 
     if (mode === 'parties') {
@@ -156,7 +173,7 @@ async function render(): Promise<void> {
         return
       }
       const series = cols.map((c): Series => ({ label: partyName(c), color: c.color, value: (p) => seatsOf(p, c.id) }))
-      chartHost.replaceChildren(count, trendChart(shown, series))
+      chartHost.replaceChildren(count, trendChart(buckets, series))
     } else {
       if (!blockSel.size) {
         chartHost.replaceChildren(callout('amber', t('dashboard.blockHint')))
@@ -167,7 +184,7 @@ async function render(): Promise<void> {
         color: '#1e3a8a',
         value: (p) => [...blockSel].reduce((s, id) => s + seatsOf(p, id), 0),
       }
-      chartHost.replaceChildren(count, trendChart(shown, [sum], { majority: true, endLabel: true }))
+      chartHost.replaceChildren(count, trendChart(buckets, [sum], { majority: true, endLabel: true }))
     }
   }
 
@@ -186,18 +203,17 @@ function s<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, s
   return n
 }
 
-/** One line per series over time (x = fieldwork end, y = seats); native tooltips on
- *  points. `majority` draws a dashed guide at 61; `endLabel` prints the last value.
- *  Rendered LTR so time reads oldest→newest regardless of page direction. */
-function trendChart(polls: PollWithResults[], series: Series[], opts: { majority?: boolean; endLabel?: boolean } = {}): HTMLElement {
-  const pts = [...polls]
-    .map((p) => ({ t: new Date(p.fieldwork_end).getTime(), poll: p }))
-    .sort((a, b) => a.t - b.t)
+/** One line per series over time (x = week start, y = weekly average seats of the
+ *  bucket's polls); native tooltips on points. `majority` draws a dashed guide at
+ *  61; `endLabel` prints the last value. Rendered LTR so time reads oldest→newest
+ *  regardless of page direction. */
+function trendChart(buckets: WeekBucket[], series: Series[], opts: { majority?: boolean; endLabel?: boolean } = {}): HTMLElement {
+  const avg = (b: WeekBucket, sr: Series) => b.polls.reduce((s2, p) => s2 + sr.value(p), 0) / b.polls.length
 
   const W = 820, H = 380, M = { top: 16, right: 16, bottom: 34, left: 34 }
   const iw = W - M.left - M.right, ih = H - M.top - M.bottom
-  const t0 = pts[0].t, t1 = pts[pts.length - 1].t
-  const rawMax = Math.max(opts.majority ? 65 : 5, ...pts.flatMap((p) => series.map((sr) => sr.value(p.poll))))
+  const t0 = buckets[0].start, t1 = buckets[buckets.length - 1].start
+  const rawMax = Math.max(opts.majority ? 65 : 5, ...buckets.flatMap((b) => series.map((sr) => avg(b, sr))))
   const yMax = Math.ceil(rawMax / 5) * 5
   const gridStep = yMax > 60 ? 10 : 5
   const x = (tt: number) => M.left + (t1 === t0 ? iw / 2 : ((tt - t0) / (t1 - t0)) * iw)
@@ -211,7 +227,7 @@ function trendChart(polls: PollWithResults[], series: Series[], opts: { majority
     svg.append(s('text', { x: M.left - 6, y: y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#94a3b8' }, String(v)))
   }
   // x date ticks (~5)
-  const nTicks = Math.min(5, pts.length)
+  const nTicks = Math.min(5, buckets.length)
   for (let i = 0; i < nTicks; i++) {
     const tt = t0 + ((t1 - t0) * i) / Math.max(1, nTicks - 1)
     svg.append(s('text', { x: x(tt), y: H - 12, 'text-anchor': 'middle', 'font-size': 11, fill: '#94a3b8' }, fmtDate(new Date(tt).toISOString())))
@@ -227,13 +243,13 @@ function trendChart(polls: PollWithResults[], series: Series[], opts: { majority
   const lineByLabel = new Map<string, SVGGElement>()
   for (const sr of series) {
     const g = s('g', {}) as SVGGElement
-    const pointsStr = pts.map((p) => `${x(p.t)},${y(sr.value(p.poll))}`).join(' ')
+    const pointsStr = buckets.map((b) => `${x(b.start)},${y(avg(b, sr))}`).join(' ')
     g.append(s('polyline', { points: pointsStr, fill: 'none', stroke: sr.color, 'stroke-width': 2, 'stroke-linejoin': 'round' }))
-    for (const p of pts) {
-      const v = sr.value(p.poll)
+    for (const b of buckets) {
+      const v = avg(b, sr)
       g.append(
-        s('circle', { cx: x(p.t), cy: y(v), r: 3, fill: sr.color },
-          s('title', {}, `${p.poll.pollster} · ${fmtDate(p.poll.fieldwork_end)} · ${v}`)),
+        s('circle', { cx: x(b.start), cy: y(v), r: 3, fill: sr.color },
+          s('title', {}, `${b.label} · ${t('dashboard.tipPolls', { n: b.polls.length })} · ${Number(v.toFixed(1))}`)),
       )
     }
     svg.append(g)
@@ -242,9 +258,9 @@ function trendChart(polls: PollWithResults[], series: Series[], opts: { majority
 
   // last value, printed at the line's end
   if (opts.endLabel) {
-    const last = pts[pts.length - 1]
-    const v = series[0].value(last.poll)
-    svg.append(s('text', { x: x(last.t) - 8, y: y(v) - 10, 'text-anchor': 'end', 'font-size': 14, 'font-weight': 'bold', fill: series[0].color }, String(v)))
+    const last = buckets[buckets.length - 1]
+    const v = avg(last, series[0])
+    svg.append(s('text', { x: x(last.start) - 8, y: y(v) - 10, 'text-anchor': 'end', 'font-size': 14, 'font-weight': 'bold', fill: series[0].color }, String(Number(v.toFixed(1)))))
   }
 
   const setHighlight = (label: string | null) => {
