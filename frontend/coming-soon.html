@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>פולי-שוק בחירות</title>
+    <script>
+      var l = localStorage.getItem('lang') === 'en' ? 'en' : 'he';
+      document.documentElement.lang = l;
+      document.documentElement.dir = l === 'en' ? 'ltr' : 'rtl';
+    </script>
+    <script type="module" src="/src/pages/coming-soon.ts"></script>
+  </head>
+  <body class="bg-sky-50 min-h-screen flex flex-col">
+    <header class="max-w-4xl mx-auto px-4 py-4 w-full flex items-center justify-between">
+      <span class="text-blue-900 font-extrabold" data-i18n="app.title">פולי-שוק בחירות</span>
+      <button id="lang-btn" class="text-sm text-slate-500 hover:text-blue-900 font-bold transition"></button>
+    </header>
+    <main id="main" class="max-w-4xl mx-auto px-4 py-8 w-full flex-1 flex items-center">
+      <section class="bg-white rounded-2xl shadow-xl p-6 md:p-8 max-w-md mx-auto text-center space-y-5 w-full">
+        <p class="text-5xl" aria-hidden="true">🗳️</p>
+        <h1 class="text-blue-900 font-extrabold text-3xl" data-i18n="app.title">פולי-שוק בחירות</h1>
+        <p class="text-slate-700 leading-relaxed" data-i18n="soon.teaser">משחק ניחושים שבועי על בחירות 2026: מנחשים כמה מנדטים תקבל כל מפלגה, צוברים נקודות לפי דיוק, ומטפסים בטבלה.</p>
+        <p class="text-slate-700 leading-relaxed font-medium" data-i18n="soon.opening">נפתחים ב־8 בספטמבר 2026 — יום אחרי הגשת הרשימות הסופיות. הבחירות עצמן: 27 באוקטובר 2026.</p>
+        <section id="signup-section" class="space-y-3 pt-2 border-t border-slate-100">
+          <h2 class="text-blue-900 font-bold" data-i18n="soon.notifyTitle">רוצים קישור כשנפתח?</h2>
+          <div id="signup-msg"></div>
+          <form id="signup-form" class="flex gap-2">
+            <input id="signup-email" type="email" required dir="ltr" placeholder="you@example.com" data-i18n-placeholder="soon.emailPlaceholder"
+                   class="flex-1 min-w-0 border border-slate-300 rounded-xl px-3 py-2 text-slate-800" />
+            <button type="submit" class="bg-sky-100 hover:bg-sky-200 disabled:bg-slate-100 disabled:text-slate-400 text-blue-900 font-bold rounded-xl py-2 px-4 text-sm transition whitespace-nowrap" data-i18n="soon.submit">עדכנו אותי</button>
+          </form>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
