@@ -130,7 +130,7 @@ export interface Ctx {
   profile: Profile | null
 }
 
-const NAV = ['polls', 'leaderboard', 'bets', 'archive', 'rules'] as const
+const NAV = ['polls', 'dashboard', 'leaderboard', 'bets', 'archive', 'rules'] as const
 
 function renderHeader(active: string): void {
   const nav = el(
