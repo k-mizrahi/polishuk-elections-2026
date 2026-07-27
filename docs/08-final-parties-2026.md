@@ -33,7 +33,7 @@ the real final list — **placeholders below, verify every one.**
 | 3 | yashar | ישר | Yashar | #7c3aed | yes | verify |
 | 4 | democrats | הדמוקרטים | The Democrats | #16a34a | yes | verify |
 | 5 | blue_white | כחול לבן | Blue & White | #38bdf8 | yes | verify still running |
-| 6 | yesodot | בית ציוני | Zionist Home | #f59e0b | yes | renamed from Yesodot Yisrael 2026-07-26; code kept |
+| 6 | yesodot | בית ציוני | Zionist Home | #f59e0b | yes | renamed from Yesodot Yisrael 2026-07-26; code kept; he name owner-approved 2026-07-27 |
 | 7 | shas | ש"ס | Shas | #111827 | yes | verify |
 | 8 | utj | יהדות התורה | United Torah Judaism | #374151 | yes | verify |
 | 9 | rzp | הציונות הדתית | Religious Zionist Party | #365314 | yes | verify (joint w/ Otzma?) |

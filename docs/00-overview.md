@@ -11,6 +11,8 @@ Poll bets are scored every week against our own polls aggregator; final-outcome 
 
 It is the sequel to [Polishuk](https://k-mizrahi.github.io/polishuk), the Democrats-primaries prediction game, and inherits its visual identity and playful-Hebrew tone.
 
+**Status (2026-07-27): pre-launch.** The game goes live **2026-09-08** (owner decision; final-outcome lists expected ~09-07). Until then the deployed site shows only the coming-soon page, the production DB carries mock players/weeks (`scripts/mock_data.py teardown` before launch), and the pipeline runs for real — polls accumulate so week one starts with history.
+
 ## Glossary
 
 | Term | Definition |

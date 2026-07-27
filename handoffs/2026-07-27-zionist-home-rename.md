@@ -20,7 +20,7 @@ Unchanged. Rerun scraper: `gh workflow run scrape.yml -R k-mizrahi/polishuk-elec
 ## Next steps (priority order)
 
 1. **Clear the poll review queue — before Wednesday's finalize.** 7 pending rows: Filber/Ch14 07-26 (the outage poll), Kantar/Israel Hayom 07-23, Midgam×2 07-21, plus three old ones (Kantar 03-29, Midgam 04-23, Lazar 06-11 — likely Wikipedia-edit re-versions; review the diffs). The 36h `review_backlog` watchdog alert is presumably already tripping on the old ones.
-2. **Owner eyeball**: Hebrew name בית ציוני (EN wiki romanizes "Bayit Tzioni", no definite article) and the kept #f59e0b color — one-line DB+registry fix if either is wrong.
+2. ~~Owner eyeball: Hebrew name בית ציוני~~ — approved by Kobi same day ("good for now"); color kept.
 3. Still open from before: poll approve-on-review decision (blocked on Ra'am/Joint List bloc question); behavioral trigger test for 0004; launch-day checklist in 07-18 handoff.
 
 ## Gotchas

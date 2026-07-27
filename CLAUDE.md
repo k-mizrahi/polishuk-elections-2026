@@ -6,7 +6,7 @@
 
 ## What this is
 
-פולי-שוק בחירות (Polishuk Elections) — a fantasy-elections game for the 2026 Knesset elections. Players submit weekly seat predictions (final outcome + next week's poll average); scoring is incentive-compatible absolute error. Live at https://k-mizrahi.github.io/polishuk-elections-2026/ (repo `k-mizrahi/polishuk-elections-2026`; this local dir keeps its old name `fantasy_polls`).
+פולי-שוק בחירות (Polishuk Elections) — a fantasy-elections game for the 2026 Knesset elections. Players submit weekly seat predictions (final outcome + next week's poll average); scoring is incentive-compatible absolute error. **Not live yet — launch is 2026-09-08**; until then https://k-mizrahi.github.io/polishuk-elections-2026/ serves only the coming-soon gate (`VITE_COMING_SOON`, see 07-18 handoff) and the prod DB holds mock data. Repo `k-mizrahi/polishuk-elections-2026`; this local dir keeps its old name `fantasy_polls`.
 
 `docs/` is normative and layered — 02 (scoring math) and 04 (schema/RLS) are the specs code must match; when code and doc disagree, fix one deliberately, never silently. Worked examples in docs/02 §6 exist as unit tests in `pipeline/tests/test_scoring.py`.
 
