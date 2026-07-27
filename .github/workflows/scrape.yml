@@ -4,6 +4,10 @@ on:
     - cron: "17 */6 * * *"   # every 6h; also the Supabase keep-alive
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   scrape:
     runs-on: ubuntu-latest

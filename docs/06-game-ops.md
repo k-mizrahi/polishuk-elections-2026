@@ -83,7 +83,7 @@ seat after reconciling two **classification** differences below.
   it separately. Component seats reconcile to our bloc total on recent polls.
   Whether Ra'am should be its own bettable line is a scoring-semantics question
   (docs/02 §6) — flagged, not yet decided.
-- **Tropper-Handel = Yesodot**: same party, different label across sources.
+- **Tropper-Hendel = Zionist Home (code `yesodot`)**: same party, different label across sources; renamed from Yesodot Yisrael 2026-07-26, old header stays aliased.
 
 ## Runbook: election night 🗳️
 

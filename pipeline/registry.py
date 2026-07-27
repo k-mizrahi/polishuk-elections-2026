@@ -31,7 +31,9 @@ PARTIES = [
     Party("yashar", "ישר", "Yashar", "#7c3aed", date(2025, 1, 1), None, 30),
     Party("democrats", "הדמוקרטים", "The Democrats", "#16a34a", date(2024, 7, 12), None, 40),
     Party("blue_white", "כחול לבן", "Blue & White", "#38bdf8", date(2025, 6, 1), None, 50),
-    Party("yesodot", "יסודות ישראל", "Yesodot Yisrael", "#f59e0b", date(2026, 7, 7), None, 60),
+    # Renamed from "Yesodot Yisrael" ~2026-07-26 (same list, Tropper-Hendel);
+    # same code keeps bets/polls/transitions intact, old header stays aliased.
+    Party("yesodot", "בית ציוני", "Zionist Home", "#f59e0b", date(2026, 7, 7), None, 60),
     Party("shas", 'ש"ס', "Shas", "#111827", date(2022, 11, 1), None, 70),
     Party("utj", "יהדות התורה", "United Torah Judaism", "#374151", date(2022, 11, 1), None, 80),
     Party("rzp", "הציונות הדתית", "Religious Zionist Party", "#365314", date(2022, 11, 1), None, 90),
@@ -67,11 +69,12 @@ ALIASES = {
     "utj": "utj",
     "yisrael beiteinu": "yisrael_beiteinu",
     "ra'am": "raam",
-    "ra'am": "raam",  # curly-apostrophe variant
+    "ra’am": "raam",  # curly-apostrophe variant
     "joint list": "joint_list",
     "dems": "democrats",
     "yashar": "yashar",
     "yesodot yisrael": "yesodot",
+    "zionist home": "yesodot",
     "yesh atid": "yesh_atid",
     "bennett 2026": "bennett_2026",
     "reserv.": "reservists",
