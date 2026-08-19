@@ -1,5 +1,5 @@
 import { partyName, t } from '../lib/i18n'
-import { activeParties, fetchParties, fetchWeeks, getSetting, supabase } from '../lib/supabase'
+import { activeParties, fetchParties, fetchWeeks, supabase } from '../lib/supabase'
 import { callout, card, el, fmtDate, initPage, ltr, partyChip, skeleton, wideTable } from '../lib/ui'
 import type { Party, Poll, PollResult } from '../lib/database.types'
 
@@ -8,8 +8,11 @@ type PollWithResults = Poll & { poll_results: PollResult[] }
 /** One chart point: every approved poll whose fieldwork ended in one Sunday-to-Saturday week. */
 type WeekBucket = { start: number; label: string; polls: PollWithResults[] }
 
-/** How far back the chart reaches when launch day is later than that (or unknown). */
-const CHART_FALLBACK_DAYS = 28
+/** The chart always shows the last four weekly averages — a fixed point count
+ *  rather than a date window, so it never empties out during a scraping gap and
+ *  never silently narrows to one or two points. Fewer are drawn only when the
+ *  data does not go back that far. */
+const CHART_POINTS = 4
 const TABLE_POLLS = 60
 
 /** The Sunday on or before a UTC instant — the start of its game week. */
@@ -58,10 +61,9 @@ async function render(): Promise<void> {
   // Every approved poll, not a page of them: a weekly average computed from a
   // truncated week is simply wrong, and a `limit` cuts mid-week. The table view
   // still shows only the most recent TABLE_POLLS rows.
-  const [parties, weeks, launchDate, { data, error }] = await Promise.all([
+  const [parties, weeks, { data, error }] = await Promise.all([
     fetchParties(),
     fetchWeeks(),
-    getSetting<string | null>('launch_date', null),
     supabase!
       .from('polls')
       .select('*, poll_results(*)')
@@ -96,24 +98,15 @@ async function render(): Promise<void> {
   const host = el('div', {})
   const toggle = el('div', { class: 'inline-flex rounded-xl bg-slate-100 p-1 mb-4' })
 
-  // Chart window starts at min(4 weeks ago, launch day) — so before launch and
-  // through its first month the chart still has depth from pre-launch polling,
-  // and from then on it simply shows the game so far. Snapped back to that
-  // date's Sunday: weeks are the atomic unit here, and a part-week point would
-  // be an average over an arbitrary slice of the week. Launch day unset (or the
-  // settings read failing) degrades to the 4-week window.
-  const cutoffDay = launchDate
-    ? Math.min(Date.now() - CHART_FALLBACK_DAYS * 86_400_000, Date.parse(launchDate))
-    : Date.now() - CHART_FALLBACK_DAYS * 86_400_000
-  const cutoff = weekStartOf(cutoffDay)
-  const buckets = weekBuckets(polls).filter((b) => b.start >= cutoff)
+  // The last CHART_POINTS weeks that actually have polls — counted, not dated,
+  // so a gap in ingest shortens the span the chart covers rather than emptying
+  // it. `polls` is non-empty here, so there is always at least one point.
+  const buckets = weekBuckets(polls).slice(-CHART_POINTS)
 
   const renderView = () => {
     host.replaceChildren(
       view === 'chart'
-        ? buckets.length
-          ? trendChart(buckets, columns)
-          : callout('amber', t('polls.chartEmpty'))
+        ? trendChart(buckets, columns)
         : detailTable(polls.slice(0, TABLE_POLLS), columns, weekPolls, avgLabel),
     )
   }

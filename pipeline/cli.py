@@ -256,10 +256,6 @@ def cmd_seed_sql() -> int:
     constants = json.dumps(scoring.DEFAULT_CONSTANTS)
     print(f"insert into app_settings (key, value) values ('scoring_constants', '{constants}');")
     print("insert into app_settings (key, value) values ('election_date', 'null');")
-    # Public launch day. Read by the polls chart to bound its window; kept in
-    # app_settings rather than a frontend constant because the date has already
-    # moved twice and changing it must not need a redeploy.
-    print("insert into app_settings (key, value) values ('launch_date', '\"2026-09-11\"');")
     print("insert into app_settings (key, value) values ('last_scraped_revid', 'null');")
     return 0
 

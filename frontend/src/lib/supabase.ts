@@ -14,18 +14,6 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return (data as Profile | null) ?? null
 }
 
-/**
- * One `app_settings` value, or `fallback` when the key is absent or JSON null.
- * The table is world-readable (0001 `settings_select using (true)` + the anon
- * SELECT grant in 0002), so this works for logged-out visitors.
- */
-export async function getSetting<T>(key: string, fallback: T): Promise<T> {
-  if (!supabase) return fallback
-  const { data } = await supabase.from('app_settings').select('value').eq('key', key).maybeSingle()
-  const value = (data as { value: T | null } | null)?.value
-  return value === null || value === undefined ? fallback : value
-}
-
 /** All game weeks ordered by week_start — week "number" is 1-based position here. */
 export async function fetchWeeks(): Promise<GameWeek[]> {
   if (!supabase) return []

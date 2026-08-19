@@ -171,8 +171,8 @@ create table official_results (
 
 ```sql
 create table app_settings (
-  key   text primary key,     -- 'scoring_constants', 'election_date', 'launch_date',
-  value jsonb not null        -- 'announcement', 'last_scraped_revid', ...
+  key   text primary key,     -- 'scoring_constants', 'election_date', 'announcement',
+  value jsonb not null        -- 'last_scraped_revid', ...
 );
 
 create table audit_log (
@@ -261,7 +261,7 @@ Ordering (tie-breakers, doc 02 §5) is applied in the query: `order by total des
 1. **Parties + aliases** — the party columns on the Wikipedia page as of July 2026 (⚠️ **verify against the live page at implementation time**; Hebrew names to be confirmed by owner): Likud / הליכוד, Together / the Yesh Atid–Bennett merger list, Religious Zionist Party / הציונות הדתית, Otzma Yehudit / עוצמה יהודית, Blue & White / כחול לבן, Shas / ש"ס, United Torah Judaism / יהדות התורה, Yisrael Beiteinu / ישראל ביתנו, Joint List / הרשימה המשותפת, The Democrats / הדמוקרטים, Yashar / ישר, Zionist Home / בית ציוני (column formerly "Yesodot Yisrael" — renamed 2026-07-26, code `yesodot` kept). One alias row per party with the exact column-header string; extra aliases added as the scraper trips on variants.
 2. **Transitions** — known 2026 events: Yesh Atid → Together, Bennett-2026 → Together (April 2026); Hadash-Ta'al / Balad / Ra'am → Joint List (June 2026); Hendel/Reservists → Yesodot Yisrael (July 2026). Pre-merger parties are seeded with `active_until` set, so historical polls can be stored against them.
 3. **game_weeks** — generate rows from launch week through end of 2026; `lock_at` = the week's own Sunday 00:00 Asia/Jerusalem converted to UTC per-row (DST-correct because it's per-date data, not a cron expression).
-4. **app_settings** — `scoring_constants: {poll: {base: 100, per_seat: 1}, final: {base: 150, per_seat: 1}}` (owner-approved values, normative in [02](02-scoring-spec.md) §4), `election_date: null`, `launch_date: "2026-09-11"` (bounds the polls-page chart window — see the Decisions log in [00](00-overview.md); it is read by the frontend, so it must stay world-readable), `last_scraped_revid: null`.
+4. **app_settings** — `scoring_constants: {poll: {base: 100, per_seat: 1}, final: {base: 150, per_seat: 1}}` (owner-approved values, normative in [02](02-scoring-spec.md) §4), `election_date: null`, `last_scraped_revid: null`.
 5. **First admin** — set `is_admin = true` for the owner's profile id after first login (documented manual step in doc 06).
 
 ## 6. Type generation

@@ -78,5 +78,4 @@ insert into game_weeks (week_start, week_end, lock_at) values ('2027-03-21', '20
 insert into game_weeks (week_start, week_end, lock_at) values ('2027-03-28', '2027-04-03', '2027-03-27T21:00:00+00:00');
 insert into app_settings (key, value) values ('scoring_constants', '{"poll": {"base": 100.0, "per_seat": 1.0}, "final": {"base": 150.0, "per_seat": 1.0}}');
 insert into app_settings (key, value) values ('election_date', 'null');
-insert into app_settings (key, value) values ('launch_date', '"2026-09-11"');
 insert into app_settings (key, value) values ('last_scraped_revid', 'null');
