@@ -23,6 +23,13 @@ Unchanged. Rerun scraper: `gh workflow run scrape.yml -R k-mizrahi/polishuk-elec
 2. ~~Owner eyeball: Hebrew name בית ציוני~~ — approved by Kobi same day ("good for now"); color kept.
 3. Still open from before: poll approve-on-review decision (blocked on Ra'am/Joint List bloc question); behavioral trigger test for 0004; launch-day checklist in 07-18 handoff.
 
+## Addendum — same session, after the rename
+
+- **Pre-launch status is now written down** (owner instruction 2026-07-27): CLAUDE.md no longer says "Live at"; docs/00 has a dated status block — launch 2026-09-08, coming-soon gate until then, prod DB holds mock data, pipeline runs for real so week one starts with poll history.
+- **Landing page verified live** (2026-07-27): root 200 serving the coming-soon bundle, game pages 404. Kobi is emailing people the link for signup: https://k-mizrahi.github.io/polishuk-elections-2026/
+- **email_signups: 1 row** as of 2026-07-27 ~05:17 UTC — Kobi's own (self-test). Real signups accumulate from his outreach; export via `select email from email_signups` over the pooler. Do NOT wipe this table at mock-data teardown.
+- Hebrew name בית ציוני owner-approved same day (docs/08 updated).
+
 ## Gotchas
 
 - **`yesodot` code ≠ display name is now permanent.** Code stays for bets/polls/transitions integrity; anyone "fixing" the code to `zionist_home` breaks FKs and carry-forward remapping.
