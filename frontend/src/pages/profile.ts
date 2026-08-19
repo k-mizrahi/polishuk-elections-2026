@@ -1,6 +1,6 @@
 import { switchLang, t, type Lang } from '../lib/i18n'
 import { fetchWeeks, supabase, weekNumber } from '../lib/supabase'
-import { BTN, callout, card, el, initPage, ltr, skeleton, wideTable } from '../lib/ui'
+import { BTN, callout, card, cleanTwitterHandle, el, initPage, ltr, skeleton, wideTable } from '../lib/ui'
 import type { Bet, Profile, Score } from '../lib/database.types'
 
 const root = document.getElementById('root')!
@@ -66,13 +66,18 @@ function editCard(p: Profile): HTMLElement {
   const saveBtn = el('button', { class: BTN }, t('profile.save')) as HTMLButtonElement
 
   saveBtn.addEventListener('click', async () => {
+    const twitter = cleanTwitterHandle(twitterInput.value)
+    if (twitter === false) {
+      status.replaceChildren(callout('red', t('profile.twitterInvalid')))
+      return
+    }
     saveBtn.disabled = true
     const lang = langSel.value as Lang
     const { error } = await supabase!
       .from('profiles')
       .update({
         display_name: displayInput.value.trim() || null,
-        twitter_handle: twitterInput.value.trim().replace(/^@/, '') || null,
+        twitter_handle: twitter,
         lang,
       })
       .eq('id', p.id)

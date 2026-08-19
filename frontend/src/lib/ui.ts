@@ -43,6 +43,19 @@ export function safeHttpUrl(u: string | null | undefined): string | null {
   }
 }
 
+/**
+ * Strip a leading '@' and normalise an empty box to null. Returns `false` when
+ * the result is not a legal X handle — mirrors the `profiles_twitter_handle_format`
+ * check in migration 0007, which is the actual boundary (the form is written
+ * straight to PostgREST with the publishable key, so this is only for a readable
+ * error). The handle is interpolated into an `x.com/<handle>` href.
+ */
+export function cleanTwitterHandle(raw: string): string | null | false {
+  const h = raw.trim().replace(/^@/, '')
+  if (!h) return null
+  return /^[A-Za-z0-9_]{1,15}$/.test(h) ? h : false
+}
+
 /** Mixed-direction safety: numbers/handles/URLs inside RTL text. */
 export function ltr(text: string | number): HTMLElement {
   return el('span', { dir: 'ltr' }, String(text))

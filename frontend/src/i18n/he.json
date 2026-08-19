@@ -193,6 +193,7 @@
   "profile.publicTitle": "פרופיל",
   "profile.displayName": "שם תצוגה",
   "profile.twitter": "כינוי ב-X",
+  "profile.twitterInvalid": "⚠️ כינוי X לא תקין — עד 15 תווים, אותיות אנגליות, ספרות וקו תחתון בלבד",
   "profile.lang": "שפה",
   "profile.langHe": "עברית",
   "profile.langEn": "English",

@@ -193,6 +193,7 @@
   "profile.publicTitle": "Profile",
   "profile.displayName": "Display name",
   "profile.twitter": "X handle",
+  "profile.twitterInvalid": "⚠️ Invalid X handle — up to 15 characters: English letters, digits and underscore only",
   "profile.lang": "Language",
   "profile.langHe": "עברית",
   "profile.langEn": "English",

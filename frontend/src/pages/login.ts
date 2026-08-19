@@ -1,6 +1,6 @@
 import { t } from '../lib/i18n'
 import { supabase } from '../lib/supabase'
-import { BTN, callout, el, initPage } from '../lib/ui'
+import { BTN, callout, cleanTwitterHandle, el, initPage } from '../lib/ui'
 
 const ctx = await initPage('login')
 
@@ -90,13 +90,18 @@ function showOnboarding(): void {
 
   saveBtn.addEventListener('click', async () => {
     if (!valid) return
+    const twitter = cleanTwitterHandle(twitterInput.value)
+    if (twitter === false) {
+      setStatus(t('profile.twitterInvalid'), 'text-red-600', false)
+      return
+    }
     saveBtn.disabled = true
     const { error } = await supabase!
       .from('profiles')
       .update({
         handle: handleInput.value.trim(),
         display_name: displayInput.value.trim() || null,
-        twitter_handle: twitterInput.value.trim().replace(/^@/, '') || null,
+        twitter_handle: twitter,
       })
       .eq('id', ctx.session!.user.id)
     if (error) {
