@@ -1,5 +1,5 @@
 import { partyName, t } from '../lib/i18n'
-import { activeParties, fetchParties, fetchWeeks, supabase } from '../lib/supabase'
+import { activeParties, fetchParties, fetchWeeks, getSetting, supabase } from '../lib/supabase'
 import { callout, card, el, fmtDate, initPage, ltr, partyChip, skeleton, wideTable } from '../lib/ui'
 import type { Party, Poll, PollResult } from '../lib/database.types'
 
@@ -8,9 +8,16 @@ type PollWithResults = Poll & { poll_results: PollResult[] }
 /** One chart point: every approved poll whose fieldwork ended in one Sunday-to-Saturday week. */
 type WeekBucket = { start: number; label: string; polls: PollWithResults[] }
 
-/** How many weeks of averages the chart shows (the table below still lists individual polls). */
-const CHART_WEEKS = 16
+/** How far back the chart reaches when launch day is later than that (or unknown). */
+const CHART_FALLBACK_DAYS = 28
 const TABLE_POLLS = 60
+
+/** The Sunday on or before a UTC instant — the start of its game week. */
+function weekStartOf(ms: number): number {
+  const d = new Date(ms)
+  // getUTCDay(): Sun=0 … Sat=6, so the day index is itself the offset back to Sunday.
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - d.getUTCDay())
+}
 
 const root = document.getElementById('root')!
 await initPage('polls')
@@ -39,9 +46,7 @@ function seatsOf(poll: PollWithResults, partyId: number): number {
 function weekBuckets(polls: PollWithResults[]): WeekBucket[] {
   const byStart = new Map<number, PollWithResults[]>()
   for (const p of polls) {
-    const d = new Date(p.fieldwork_end)
-    // getUTCDay(): Sun=0 … Sat=6, so the day index is itself the offset back to Sunday.
-    const start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - d.getUTCDay())
+    const start = weekStartOf(new Date(p.fieldwork_end).getTime())
     byStart.set(start, [...(byStart.get(start) ?? []), p])
   }
   return [...byStart.entries()]
@@ -53,9 +58,10 @@ async function render(): Promise<void> {
   // Every approved poll, not a page of them: a weekly average computed from a
   // truncated week is simply wrong, and a `limit` cuts mid-week. The table view
   // still shows only the most recent TABLE_POLLS rows.
-  const [parties, weeks, { data, error }] = await Promise.all([
+  const [parties, weeks, launchDate, { data, error }] = await Promise.all([
     fetchParties(),
     fetchWeeks(),
+    getSetting<string | null>('launch_date', null),
     supabase!
       .from('polls')
       .select('*, poll_results(*)')
@@ -90,12 +96,24 @@ async function render(): Promise<void> {
   const host = el('div', {})
   const toggle = el('div', { class: 'inline-flex rounded-xl bg-slate-100 p-1 mb-4' })
 
-  const buckets = weekBuckets(polls).slice(-CHART_WEEKS)
+  // Chart window starts at min(4 weeks ago, launch day) — so before launch and
+  // through its first month the chart still has depth from pre-launch polling,
+  // and from then on it simply shows the game so far. Snapped back to that
+  // date's Sunday: weeks are the atomic unit here, and a part-week point would
+  // be an average over an arbitrary slice of the week. Launch day unset (or the
+  // settings read failing) degrades to the 4-week window.
+  const cutoffDay = launchDate
+    ? Math.min(Date.now() - CHART_FALLBACK_DAYS * 86_400_000, Date.parse(launchDate))
+    : Date.now() - CHART_FALLBACK_DAYS * 86_400_000
+  const cutoff = weekStartOf(cutoffDay)
+  const buckets = weekBuckets(polls).filter((b) => b.start >= cutoff)
 
   const renderView = () => {
     host.replaceChildren(
       view === 'chart'
-        ? trendChart(buckets, columns)
+        ? buckets.length
+          ? trendChart(buckets, columns)
+          : callout('amber', t('polls.chartEmpty'))
         : detailTable(polls.slice(0, TABLE_POLLS), columns, weekPolls, avgLabel),
     )
   }

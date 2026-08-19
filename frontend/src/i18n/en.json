@@ -147,6 +147,7 @@
   "polls.avgRow": "This week's average ({n} polls)",
   "polls.avgNone": "No polls this week",
   "polls.chartNote": "Each point is that week's average (Sunday–Saturday). Hover or tap a point to see which polls it counts.",
+  "polls.chartEmpty": "No polls in the window the chart covers.",
   "polls.subThreshold": "Below the electoral threshold — counted as 0 in the average",
   "polls.tipAvg": "Week's average:",
   "polls.tipIncluded": "Polls counted",
