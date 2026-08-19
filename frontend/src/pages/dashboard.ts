@@ -231,7 +231,10 @@ function trendChart(buckets: WeekBucket[], series: Series[], opts: { majority?: 
   const nTicks = Math.min(5, buckets.length)
   for (let i = 0; i < nTicks; i++) {
     const tt = t0 + ((t1 - t0) * i) / Math.max(1, nTicks - 1)
-    svg.append(s('text', { x: x(tt), y: H - 12, 'text-anchor': 'middle', 'font-size': 11, fill: '#94a3b8' }, fmtDate(new Date(tt).toISOString())))
+    // The end ticks sit on the plot edges, so a centred label overflows the
+    // viewBox and gets clipped ("2.8.202"). Anchor them inward instead.
+    const anchor = i === 0 ? 'start' : i === nTicks - 1 ? 'end' : 'middle'
+    svg.append(s('text', { x: x(tt), y: H - 12, 'text-anchor': anchor, 'font-size': 11, fill: '#94a3b8' }, fmtDate(new Date(tt).toISOString())))
   }
 
   // 61-seat majority guide
