@@ -1,6 +1,6 @@
 import { switchLang, t, type Lang } from '../lib/i18n'
 import { fetchWeeks, supabase, weekNumber } from '../lib/supabase'
-import { BTN, callout, card, cleanTwitterHandle, el, initPage, ltr, skeleton, wideTable } from '../lib/ui'
+import { auto, BTN, callout, card, cleanTwitterHandle, el, initPage, ltr, skeleton, wideTable } from '../lib/ui'
 import type { Bet, Profile, Score } from '../lib/database.types'
 
 const root = document.getElementById('root')!
@@ -45,7 +45,7 @@ async function main(): Promise<void> {
 
 function publicCard(p: Profile): HTMLElement {
   return card(
-    el('h1', { class: 'text-blue-900 font-extrabold text-3xl mb-2' }, `${t('profile.publicTitle')} · ${p.handle}`),
+    el('h1', { class: 'text-blue-900 font-extrabold text-3xl mb-2' }, `${t('profile.publicTitle')} · `, auto(p.handle ?? '')),
     p.display_name ? el('p', { class: 'text-slate-700' }, p.display_name) : null,
     p.twitter_handle
       ? el('a', { href: `https://x.com/${p.twitter_handle}`, target: '_blank', rel: 'noopener', dir: 'ltr', class: 'text-blue-700 hover:underline' }, `@${p.twitter_handle}`)
@@ -94,7 +94,7 @@ function editCard(p: Profile): HTMLElement {
   const field = (key: string, input: HTMLElement) =>
     el('div', {}, el('label', { class: 'block text-sm font-bold text-slate-700 mb-1' }, t(key)), input)
   return card(
-    el('h1', { class: 'text-blue-900 font-extrabold text-3xl mb-4' }, `${t('profile.title')} · ${p.handle ?? ''}`),
+    el('h1', { class: 'text-blue-900 font-extrabold text-3xl mb-4' }, `${t('profile.title')} · `, auto(p.handle ?? '')),
     el('div', { class: 'space-y-4 max-w-md' }, field('profile.displayName', displayInput), field('profile.twitter', twitterInput), field('profile.lang', langSel), saveBtn, status),
   )
 }

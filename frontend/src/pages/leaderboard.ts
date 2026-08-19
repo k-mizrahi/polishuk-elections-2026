@@ -44,7 +44,7 @@ async function render(): Promise<void> {
     const player = el(
       'span',
       { class: 'inline-flex items-center gap-2' },
-      el('a', { href: `profile.html?u=${encodeURIComponent(r.handle)}`, class: 'text-blue-700 font-bold hover:underline' }, r.handle),
+      el('a', { href: `profile.html?u=${encodeURIComponent(r.handle)}`, dir: 'auto', class: 'text-blue-700 font-bold hover:underline' }, r.handle),
       r.twitter_handle
         ? el('a', { href: `https://x.com/${r.twitter_handle}`, target: '_blank', rel: 'noopener', dir: 'ltr', class: 'text-slate-400 text-xs hover:text-blue-700' }, `@${r.twitter_handle}`)
         : null,

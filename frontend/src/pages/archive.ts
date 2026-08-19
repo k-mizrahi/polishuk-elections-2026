@@ -110,7 +110,7 @@ async function renderWeek(parties: Party[], week: GameWeek, content: HTMLElement
       const lineById = new Map(b.bet_lines.map((l) => [l.party_id, l.seats]))
       return [
         b.profiles?.handle
-          ? el('a', { href: `profile.html?u=${encodeURIComponent(b.profiles.handle)}`, class: 'text-blue-700 font-bold hover:underline' }, b.profiles.handle)
+          ? el('a', { href: `profile.html?u=${encodeURIComponent(b.profiles.handle)}`, dir: 'auto', class: 'text-blue-700 font-bold hover:underline' }, b.profiles.handle)
           : '–',
         b.is_carried ? '⟳' : '',
         ...columns.map((p) => (lineById.has(p.id) ? ltr(String(lineById.get(p.id))) : '–')),

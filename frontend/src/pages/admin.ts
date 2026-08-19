@@ -1,6 +1,6 @@
 import { partyName, t } from '../lib/i18n'
 import { fetchParties, supabase } from '../lib/supabase'
-import { BTN, BTN_SM, callout, card, el, fmtDate, initPage, ltr, partyChip, safeHttpUrl, seatForm, skeleton, wideTable } from '../lib/ui'
+import { auto, BTN, BTN_SM, callout, card, el, fmtDate, initPage, ltr, partyChip, safeHttpUrl, seatForm, skeleton, wideTable } from '../lib/ui'
 import type { OfficialResult, Party, Poll, PollResult, Profile } from '../lib/database.types'
 
 type PendingPoll = Poll & { poll_results: PollResult[] }
@@ -315,7 +315,7 @@ async function renderUsers(host: HTMLElement): Promise<void> {
       p.is_admin ? el('span', { class: 'bg-sky-100 text-blue-900 rounded px-1.5 py-0.5 text-xs font-bold' }, t('admin.adminTag')) : null,
       p.is_banned ? el('span', { class: 'bg-red-100 text-red-700 rounded px-1.5 py-0.5 text-xs font-bold' }, t('admin.bannedTag')) : null,
     )
-    return [p.handle ?? '–', p.display_name ?? '–', tags, ltr(fmtDate(p.created_at)), toggle]
+    return [auto(p.handle ?? '–'), auto(p.display_name ?? '–'), tags, ltr(fmtDate(p.created_at)), toggle]
   })
 
   host.replaceChildren(

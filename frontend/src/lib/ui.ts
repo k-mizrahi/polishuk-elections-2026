@@ -61,6 +61,18 @@ export function ltr(text: string | number): HTMLElement {
   return el('span', { dir: 'ltr' }, String(text))
 }
 
+/**
+ * Let the first strong character pick the direction. For user-supplied names
+ * and handles, which `profiles` constrains only by length (3–20 chars) and so
+ * may be Latin or Hebrew: a Latin handle dropped bare into an RTL cell gets its
+ * leading punctuation reordered by the bidi algorithm — `_kobim` renders as
+ * `kobim_`. `ltr` would fix that but would then mangle Hebrew names, so the
+ * direction has to be decided per value, not per column.
+ */
+export function auto(text: string | number): HTMLElement {
+  return el('span', { dir: 'auto' }, String(text))
+}
+
 export const BTN =
   'bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold rounded-xl py-3 px-8 shadow-md transition'
 export const BTN_SM =
