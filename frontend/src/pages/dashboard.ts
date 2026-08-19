@@ -9,7 +9,7 @@ type Mode = 'parties' | 'block'
 /** A line on the chart: label + color + a per-poll value. */
 type Series = { label: string; color: string; value: (p: PollWithResults) => number }
 
-/** One chart point: all selected-pollster polls of one Friday-to-Friday week. */
+/** One chart point: all selected-pollster polls of one Sunday-to-Saturday week. */
 type WeekBucket = { start: number; label: string; polls: PollWithResults[] }
 
 const root = document.getElementById('root')!
@@ -32,12 +32,13 @@ function seatsOf(poll: PollWithResults, partyId: number): number {
   return Number(r.seats)
 }
 
-/** Group polls into Friday-to-Friday weeks (the game's average window), oldest first. */
+/** Group polls into Sunday-to-Saturday weeks (the game's average window), oldest first. */
 function weekBuckets(polls: PollWithResults[]): WeekBucket[] {
   const byStart = new Map<number, PollWithResults[]>()
   for (const p of polls) {
     const d = new Date(p.fieldwork_end)
-    const start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - ((d.getUTCDay() - 5 + 7) % 7))
+    // getUTCDay(): Sun=0 … Sat=6, so the day index is itself the offset back to Sunday.
+    const start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - d.getUTCDay())
     byStart.set(start, [...(byStart.get(start) ?? []), p])
   }
   return [...byStart.entries()]

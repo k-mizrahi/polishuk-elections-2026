@@ -102,9 +102,9 @@ create table poll_results (
 ```sql
 create table game_weeks (
   id              serial primary key,
-  week_start      date not null unique,     -- Friday (Israel); Friday→Thursday window (R7, docs/09)
-  week_end        date not null,            -- Thursday
-  lock_at         timestamptz not null,     -- the week's own Friday 12:00 Israel, stored UTC
+  week_start      date not null unique,     -- Sunday (Israel); Sunday→Saturday window (2026-08-19)
+  week_end        date not null,            -- Saturday
+  lock_at         timestamptz not null,     -- the week's own Sunday 00:00 Israel ("Saturday midnight"), stored UTC
   status          text not null default 'scheduled'
                     check (status in ('scheduled', 'open', 'locked', 'scored')),
   is_final_week   boolean not null default false,
@@ -112,7 +112,7 @@ create table game_weeks (
 );
 ```
 
-`lock_at` is data, not code — the ⚠️ Friday-noon decision can be changed per-week without a deploy. `status` is bookkeeping for the pipeline/UI; **privacy and write-locks key off `lock_at` directly**, so a late cron never leaks or admits anything.
+`lock_at` is data, not code — the lock instant can be changed per-week without a deploy. `status` is bookkeeping for the pipeline/UI; **privacy and write-locks key off `lock_at` directly**, so a late cron never leaks or admits anything.
 
 ### bets & bet_lines
 
@@ -260,8 +260,8 @@ Ordering (tie-breakers, doc 02 §5) is applied in the query: `order by total des
 
 1. **Parties + aliases** — the party columns on the Wikipedia page as of July 2026 (⚠️ **verify against the live page at implementation time**; Hebrew names to be confirmed by owner): Likud / הליכוד, Together / the Yesh Atid–Bennett merger list, Religious Zionist Party / הציונות הדתית, Otzma Yehudit / עוצמה יהודית, Blue & White / כחול לבן, Shas / ש"ס, United Torah Judaism / יהדות התורה, Yisrael Beiteinu / ישראל ביתנו, Joint List / הרשימה המשותפת, The Democrats / הדמוקרטים, Yashar / ישר, Zionist Home / בית ציוני (column formerly "Yesodot Yisrael" — renamed 2026-07-26, code `yesodot` kept). One alias row per party with the exact column-header string; extra aliases added as the scraper trips on variants.
 2. **Transitions** — known 2026 events: Yesh Atid → Together, Bennett-2026 → Together (April 2026); Hadash-Ta'al / Balad / Ra'am → Joint List (June 2026); Hendel/Reservists → Yesodot Yisrael (July 2026). Pre-merger parties are seeded with `active_until` set, so historical polls can be stored against them.
-3. **game_weeks** — generate rows from launch week through end of 2026; `lock_at` = preceding Friday 12:00 Asia/Jerusalem converted to UTC per-row (DST-correct because it's per-date data, not a cron expression).
-4. **app_settings** — `scoring_constants: {poll: {base: 30, per_seat: 1}, final: {base: 100, per_seat: 2}}`, `election_date: null`, `last_scraped_revid: null`.
+3. **game_weeks** — generate rows from launch week through end of 2026; `lock_at` = the week's own Sunday 00:00 Asia/Jerusalem converted to UTC per-row (DST-correct because it's per-date data, not a cron expression).
+4. **app_settings** — `scoring_constants: {poll: {base: 100, per_seat: 1}, final: {base: 150, per_seat: 1}}` (owner-approved values, normative in [02](02-scoring-spec.md) §4), `election_date: null`, `last_scraped_revid: null`.
 5. **First admin** — set `is_admin = true` for the owner's profile id after first login (documented manual step in doc 06).
 
 ## 6. Type generation

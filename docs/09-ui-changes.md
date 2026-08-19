@@ -70,7 +70,7 @@ We publish only after the party lists are **final and official**, so no mid-game
 
 ---
 
-### R7 · Friday→Friday poll window ✅ ⚠️ spec/pipeline dependency
+### R7 · Friday→Friday poll window ✅ ⚠️ **superseded 2026-08-19 by R8 (Sunday→Saturday)** — kept as the record of what shipped on 2026-07-13
 Poll copy + the actual measurement window now say/count **Friday to Friday**.
 
 **Decisions made:** date basis = **fieldwork_end** (Wikipedia has no publication date; confirmed by inspecting the live fixture); week model = **Friday 00:00 → Thursday 23:59**, bets lock at the week's own **Friday 12:00**. Done as a full spec + pipeline + live-schedule migration.
@@ -82,6 +82,22 @@ Shipped:
 - **Spec:** `docs/02` §2 (window + membership) and §7 (re-derived anti-sniping argument for the Friday model — residual one-poll edge is <1 seat on the unweighted mean); `docs/04` (game_weeks + publication_date), `docs/00`/`01`/`05`/`06` week-model references.
 - **Live DB:** all 38 `game_weeks` remapped in place to Friday weeks (open week now 07-17→07-23); approved polls reassigned by fieldwork_end (historical polls remain pre-schedule/unassigned, as before).
 - **Residual (flagged):** "published" in the rules is colloquial — internally it's the fieldwork date. A true publication-date basis needs a real source (the `publication_date` column is ready for it).
+
+---
+
+### R8 · Sunday→Saturday week, Saturday-midnight lock ✅ ⚠️ spec/pipeline/schedule dependency
+Supersedes R7's week model (owner decision 2026-08-19, alongside moving launch to Friday morning 2026-09-11).
+
+**Decisions made:** week model = **Sunday 00:00 → Saturday 23:59 Asia/Jerusalem** (the Israeli week); bets lock at **Saturday midnight**, which *is* the week's own start instant. Date basis is unchanged (**fieldwork_end**).
+
+**Why:** R7's Friday-noon lock sat 12 hours inside the week it governed, leaving a residual sniping edge — a poll whose fieldwork ended that Friday morning could be public before the lock and still count toward the week being bet on. Making the lock coincide with the week boundary closes that window by construction rather than by argument: no poll's fieldwork can end inside week *w* before *w* has begun.
+
+Shipped:
+- **Pipeline:** `gameweeks.py` — `SUNDAY` boundary, `LOCK_TIME = 00:00`; `lock_at_for()` returns the week's own Sunday 00:00 IL. `test_weekly_close.py` updated + a new `test_lock_coincides_with_week_start`.
+- **Schedule:** `weekly-close.yml` cron moved to Sat 21:05/22:05 UTC (= Sun 00:05 IL either DST offset); the DST guard now accepts local hour `00` (close) or `12` (Wednesday finalize). Verified exactly one of each pair fires per week in both seasons.
+- **Spec:** `docs/02` §2 (window + membership) and §7 (anti-sniping argument re-derived — now closed by construction), `docs/00` glossary + Decisions log + lock-time open item, `docs/01`, `docs/03`, `docs/04` (`game_weeks` comments + seed plan), `docs/05` §6, `docs/06` weekly cycle + admin checklist + risk register.
+- **Copy:** `he.json`/`en.json` + HTML fallbacks — every "Friday 12:00" / "Friday to Friday" string moved to Saturday-midnight / Sunday-to-Saturday.
+- **Not yet done:** the **live `game_weeks` schedule still holds Friday weeks** — it must be regenerated before launch, and `seed.sql` regenerated from `cli.py seed-sql`. See the launch checklist.
 
 ---
 

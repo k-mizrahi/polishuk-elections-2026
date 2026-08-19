@@ -4,8 +4,8 @@ on:
     # GitHub cron is UTC-only and Israel flips UTC+2/+3, so schedule both
     # candidate hours; the in-script guard runs the job only in the intended
     # local window (docs/03).
-    - cron: "5 9 * * FRI"    # Fri 12:05 IDT (summer)
-    - cron: "5 10 * * FRI"   # Fri 12:05 IST (winter)
+    - cron: "5 21 * * SAT"   # Sun 00:05 IDT (summer) — just after the Sat-midnight lock
+    - cron: "5 22 * * SAT"   # Sun 00:05 IST (winter)
     - cron: "5 9 * * WED"    # Wednesday finalize run (docs/06)
     - cron: "5 10 * * WED"
   workflow_dispatch: {}
@@ -23,8 +23,15 @@ jobs:
       - name: DST guard
         id: guard
         run: |
+          # Intended local windows: 00:0x Sunday (post-lock close) and 12:0x
+          # Wednesday (finalize). Each is scheduled at both candidate UTC hours,
+          # so exactly one of the pair lands in the window for the current DST offset.
           H=$(TZ=Asia/Jerusalem date +%H)
-          echo "run=$([ "$H" = "12" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+          if [ "$H" = "00" ] || [ "$H" = "12" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "run=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=no" >> "$GITHUB_OUTPUT"
+          fi
       - name: Close week (flip statuses, carry forward, recompute scores)
         if: steps.guard.outputs.run == 'yes'
         working-directory: pipeline

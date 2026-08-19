@@ -4,20 +4,20 @@ Operational truth for running the game week to week. The automation lives in `.g
 
 ## Weekly cycle (what happens when)
 
-All times Asia/Jerusalem. Game week *w* runs **Friday–Thursday** (R7, docs/09); its bets lock at that **Friday 12:00**.
+All times Asia/Jerusalem. Game week *w* runs **Sunday–Saturday**; its bets lock at **Saturday midnight**, the instant *w* begins (revised 2026-08-19; was Friday–Thursday with a Friday-noon lock, R7/docs/09).
 
 | When | What | Who |
 |---|---|---|
 | continuous, every 6h | Scrape polls; auto-approve clean rows; queue anomalies; stamp `last_scrape_ok_at` heartbeat | `scrape.yml` |
 | continuous, every 3h | **Freshness watchdog** — heartbeat/backlog/outlet checks; files a GitHub issue on breach | `watchdog.yml` |
-| **Friday 12:00** | Lock instant for week *w* bets — nothing *runs*; RLS/trigger predicates over `lock_at` flip write-access off and visibility on | Postgres |
-| Friday ~12:05 | **Weekly close job**: (1) mark week *w−1* `locked`→bookkeeping, week *w* `open`→`locked`… precisely: transition statuses so *w* is locked and *w+1* is `open`; (2) **carry forward** — for each player and kind with a bet history but no week-(*w+1*) bet, clone the latest bet with `is_carried = true`, remapped through `party_transitions`; (3) compute **provisional** averages/scores for completed weeks | `weekly-close.yml` |
-| **Wednesday ~12:00** | **Finalize run**: recompute everything (doc 02 §8) — by now late-published weekend polls have reached Wikipedia; this run also doubles as a catch-up sweep if Friday's run failed | `weekly-close.yml` |
+| **Saturday 24:00** (= Sunday 00:00) | Lock instant for week *w* bets — nothing *runs*; RLS/trigger predicates over `lock_at` flip write-access off and visibility on | Postgres |
+| Sunday ~00:05 | **Weekly close job**: (1) mark week *w−1* `locked`→bookkeeping, week *w* `open`→`locked`… precisely: transition statuses so *w* is locked and *w+1* is `open`; (2) **carry forward** — for each player and kind with a bet history but no week-(*w+1*) bet, clone the latest bet with `is_carried = true`, remapped through `party_transitions`; (3) compute **provisional** averages/scores for completed weeks | `weekly-close.yml` |
+| **Wednesday ~12:00** | **Finalize run**: recompute everything (doc 02 §8) — by now late-published weekend polls have reached Wikipedia; this run also doubles as a catch-up sweep if Sunday's run failed | `weekly-close.yml` |
 | any time | Manual full recompute | `recompute.yml` (`workflow_dispatch`) |
 
 All jobs are idempotent (natural-key upserts + truncate-rewrite scoring); rerunning any of them at any time is safe. That is the primary incident response for every cron mishap.
 
-### Weekly admin checklist (~5 minutes, after Friday close)
+### Weekly admin checklist (~5 minutes, after the Sunday close)
 
 1. Actions tab: did `weekly-close` go green? (If not: read log, rerun.)
 2. Poll review queue empty? Approve/reject pending rows — **before Wednesday's finalize**.
@@ -132,7 +132,24 @@ functions (`where true`).
 | Supabase free-tier pause (7-day idle) | low (cron traffic) | high | 6-hour scraper + explicit keep-alive query even on no-change runs |
 | Magic-link email rate limits (free tier) | medium at launch spikes | low | Google OAuth is the primary path; rate-limited users retry or use Google |
 | GH cron drift/skip | high (minutes), low (whole-day) | low | DB-enforced lock; idempotent jobs; Wednesday sweep |
-| Lock time wrong for real poll cadence | medium | medium | ⚠️ Flagged decision: revisit Friday 12:00 after ~4 weeks of observed publication days; `lock_at` is per-week data, changeable without deploy (announce before changing) |
+| Lock time wrong for real poll cadence | low | medium | Lock is Saturday midnight = the week's own start, so the sniping window is closed by construction (doc 02 §7). Still worth confirming against observed publication days after ~4 weeks; `lock_at` is per-week data, changeable without deploy (announce before changing) |
 | Scoring constants feel off after launch | medium | medium | Constants in `app_settings`, tunable **pre-launch only**; post-launch frozen (fairness) — hence the sign-off gate in doc 02 §4 |
 | Sockpuppets / abuse | low | low | Doc 02 §7; ban + audit log |
 | Solo-maintainer bus factor | — | — | These docs + runbooks are the mitigation |
+
+### Open security items (from the 2026-07-15 whole-app review)
+
+The critical and medium findings shipped in migrations `0004_bet_lines_lock.sql` /
+`0005_profile_privacy.sql` plus the scraper span clamp — all applied to the live DB and
+deployed in lockstep. Still open, tracked here rather than in a session memory:
+
+| Item | Severity | State |
+|---|---|---|
+| **Poll auto-approve** — new polls default `status="approved"` (`cli.py`), so a fabricated Wikipedia row summing to 120 auto-ingests within 6h and skews scoring | high | Open **design decision**: owner weighing weekly admin confirmation. Safe to adopt approve-on-review because scoring is a pure full recompute that self-heals on rerun; alternative is auto-approve only known pollsters + N12 cross-check the watchdog already fetches |
+| `leaderboard` view lacks `security_invoker` (RLS bypass; leaks `first_bet_at`) | low | Open |
+| RLS enabled but not **forced** on tables | low | Open |
+| GitHub Actions pinned to mutable tags, not SHAs | low | Open |
+| `twitter_handle` / `parties.color` unvalidated | low | Open |
+
+Rollback note: a frontend rollback to a pre-2026-07-15 build breaks against 0005's
+tightened RLS — reverting the frontend must also revert 0005.

@@ -2,7 +2,13 @@
 
 Milestones with acceptance criteria. Order within V1 is the recommended build order — each step is verifiable on its own.
 
-**Status 2026-07-11**: milestones 1–9 built and deployed (site live and connected, first scrape + close done). Milestone 10 (dry-run week) pending; Google OAuth + admin bootstrap pending (docs/06 setup runbook). Known deferrals: admin "Weeks" and "Ops" tabs (V1.5), polls-page collapsible past-week averages (archive covers them), `database.types.ts` still hand-written (regenerate via `supabase gen types` when convenient), election_date not settable from the admin UI yet (app_settings edit).
+**Status 2026-08-19**: V1 milestones 1–9 built, deployed and exercised — Google OAuth and the admin bootstrap are done (owner played all pages as admin on the mock-data seed, 2026-07-12), and the site now runs behind the coming-soon gate until launch on Friday morning 2026-09-11. Shipped since: the 07-13 UI batch (new scoring caps, polls trend chart, Friday→Friday weeks), the freshness watchdog + N12 cross-source validation, the 07-15 security batch (migrations 0004/0005), the poll-trends dashboard, and the coming-soon landing page + `email_signups` list (migration 0006).
+
+Milestone 10 (dry-run week) is the remaining launch-blocking item — the mock-data seed covered the UI but not a live submit→lock→reveal→score loop with real players. Poll ingest has been down since 2026-08-07 (unmapped `Unity` column) and is parked by decision until the final lists land Thursday 2026-09-10, when the registry is rebuilt in one pass and a single scrape backfills the gap.
+
+**Launch-week schedule (owner decision 2026-08-19)** — lists Thursday 09-10, launch Friday morning 09-11, first playable week 09-13→09-19 (lock Saturday 09-12 at midnight). The registry rebuild, the live `game_weeks` regeneration to R8 Sunday→Saturday weeks, the backfill scrape, review-queue clearing, mock-data teardown and the gate flip all fall in a single overnight. The dry-run week does **not** depend on current polls, so it is the one item that can be pulled forward onto the existing (stale) poll set instead of competing for that window — decide before 09-10.
+
+Known deferrals, unchanged: admin "Weeks" and "Ops" tabs (V1.5), polls-page collapsible past-week averages (archive covers them), `database.types.ts` still hand-written (regenerate via `supabase gen types` when convenient), election_date not settable from the admin UI yet (app_settings edit).
 
 ## V1 — launch-blocking
 
@@ -30,7 +36,7 @@ Milestones with acceptance criteria. Order within V1 is the recommended build or
 | Per-party trend chart on `polls.html` (uPlot or Chart.js; polls as dots, weekly averages as line, party colors) | Renders 6 months of polls smoothly on mobile; RTL-correct axis |
 | Public profile pages polish (`?u=handle`) | Shareable link previews (OG tags) |
 | Week-recap generator | One click in admin → Hebrew recap text (top movers, best week score) ready to paste into a tweet — **no X API** |
-| Lock-time review ⚠️ | After ~4 weeks: analyze poll publication days; confirm or move Friday 12:00 (announce + update `lock_at` data) |
+| Lock-time review | After ~4 weeks: analyze poll publication days; confirm or move the Saturday-midnight lock (announce + update `lock_at` data). Lower stakes since R8 — the lock now coincides with the week boundary, so there is no sniping window to close |
 
 ## V2 — nice-to-haves
 

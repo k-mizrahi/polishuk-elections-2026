@@ -12,8 +12,8 @@ Source of truth for pages, states, i18n/RTL behavior, and copy tone. Game math l
 ## Weekly player loop (the 30-second pitch)
 
 1. Log in → see your current standing bets (fresh, carried, or none).
-2. Adjust two lists so each sums to 120 — before **Friday 12:00**.
-3. Thursday night the polls week closes; your poll score lands soon after (bets went public at the Friday lock).
+2. Adjust two lists so each sums to 120 — before **Saturday midnight**.
+3. Saturday night the polls week closes; your poll score lands soon after (bets went public at the Saturday-midnight lock).
 4. Repeat until election day; after results, every week you were right pays out.
 
 ## Visual identity
@@ -37,7 +37,7 @@ Shared chrome on every page: header (logo, nav, language toggle, login state), f
 
 - Hero: logo, one-line pitch, primary CTA ("להתחיל לנחש" → login or bets).
 - **Status strip** (logged-in): week number, countdown to lock, per-kind bet state — ✓ submitted this week / ⟳ carried from week N ("לחצו לעדכן") / ✗ none yet.
-- Rules section in plain language, including: the two bets, Friday-noon lock, carry-forward, hidden-until-lock, and a **worked scoring example card** showing an integer bet scored against a fractional average (doc 02 Example A) — this is the single most confusing mechanic; it gets a visual.
+- Rules section in plain language, including: the two bets, Saturday-midnight lock, carry-forward, hidden-until-lock, and a **worked scoring example card** showing an integer bet scored against a fractional average (doc 02 Example A) — this is the single most confusing mechanic; it gets a visual.
 - Amber callout: "מה זה הימור מתגלגל?" explaining carried bets.
 - States: logged-out / logged-in / banned (dimmed CTA + explanation).
 
@@ -69,7 +69,7 @@ Two stacked cards — **final-outcome bet** first (it's the headline game), then
 ### `leaderboard.html`
 
 - Rank, handle (→ public profile), X handle link, **total**, final subtotal, poll subtotal, weeks played, pts/week. Sorted per doc 02 §5 tie-breakers; ties display same rank number.
-- Note under the table: finals ≈ ×2.5 polls, link to rules. Empty state pre-first-scoring: "עוד אין ניקוד — ההימורים הראשונים ננעלים ביום שישי".
+- Note under the table: finals ≈ ×2.5 polls, link to rules. Empty state pre-first-scoring: "עוד אין ניקוד — ההימורים הראשונים ננעלים במוצאי שבת".
 
 ### `archive.html` — Week archive
 

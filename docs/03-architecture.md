@@ -27,7 +27,7 @@
 
 1. **Play** (browser ↔ Supabase): the static site holds only the project URL and the **anon key** (public by design). Users authenticate via Supabase Auth; every read/write carries the user JWT and is scoped by RLS. Bets are written through the `upsert_bet` RPC (doc 04 §2). There is no server of ours in this path — availability is Supabase's plus GitHub Pages'.
 2. **Scrape** (GH Actions → Wikipedia → Supabase): cron every 6 hours runs `pipeline/scraper.py` with the **service-role key** (GH Actions secret). Details in doc 05.
-3. **Weekly close** (GH Actions → Supabase): cron shortly after Friday-noon lock runs `pipeline/weekly_close.py`: status flips, carry-forward, provisional averages; a Wednesday run finalizes scores. Details in doc 06 runbook.
+3. **Weekly close** (GH Actions → Supabase): cron shortly after the Saturday-midnight lock runs `pipeline/weekly_close.py`: status flips, carry-forward, provisional averages; a Wednesday run finalizes scores. Details in doc 06 runbook.
 4. **Scoring** (same job, or manual `workflow_dispatch`): full recompute per doc 02 §8.
 
 ## Key decisions and why

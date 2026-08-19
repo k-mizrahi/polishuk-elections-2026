@@ -6,7 +6,7 @@
 
 ## What this is
 
-פולי-שוק בחירות (Polishuk Elections) — a fantasy-elections game for the 2026 Knesset elections. Players submit weekly seat predictions (final outcome + next week's poll average); scoring is incentive-compatible absolute error. **Not live yet — launch is 2026-09-08**; until then https://k-mizrahi.github.io/polishuk-elections-2026/ serves only the coming-soon gate (`VITE_COMING_SOON`, see 07-18 handoff) and the prod DB holds mock data. Repo `k-mizrahi/polishuk-elections-2026`; this local dir keeps its old name `fantasy_polls`.
+פולי-שוק בחירות (Polishuk Elections) — a fantasy-elections game for the 2026 Knesset elections. Players submit weekly seat predictions (final outcome + next week's poll average); scoring is incentive-compatible absolute error. **Not live yet** — see Status below. Site https://k-mizrahi.github.io/polishuk-elections-2026/, repo `k-mizrahi/polishuk-elections-2026`; this local dir keeps its old name `fantasy_polls`.
 
 `docs/` is normative and layered — 02 (scoring math) and 04 (schema/RLS) are the specs code must match; when code and doc disagree, fix one deliberately, never silently. Worked examples in docs/02 §6 exist as unit tests in `pipeline/tests/test_scoring.py`.
 
@@ -16,7 +16,7 @@ Three legs, no app server:
 
 - **`frontend/`** — static Vite MPA (vanilla TS, Tailwind v4, no framework, no router; one HTML entry + one `src/pages/*.ts` per page). Talks straight to Supabase with the publishable key; RTL/LTR served by one stylesheet using **logical utilities only** (`ms-*`/`pe-*`/`text-start` — never `ml-*`/`text-left`). All UI strings live in `src/i18n/{he,en}.json` via `t()`/`data-i18n`; key sets must stay identical and HTML fallback text must equal he.json.
 - **`pipeline/`** — Python jobs run by GitHub Actions cron (and locally): `scraper.py` (Wikipedia → polls), `scoring.py` (pure full recompute — never incremental; corrections self-heal on rerun), `weekly_close.py` (status flips + carry-forward), orchestrated by `cli.py`, DB access via PostgREST in `db.py`.
-- **`supabase/`** — migrations are the referee: bet validity (Σ=120, seats 0 or ≥4), the Friday-noon lock, and bet privacy (hidden until `lock_at`) are enforced by triggers/RLS in Postgres, not in JS or cron. Multi-row writes go through SQL RPCs (`upsert_bet`, `ingest_polls`, `apply_scoring`, `admin_upsert_bet`) so they're transactional.
+- **`supabase/`** — migrations are the referee: bet validity (Σ=120, seats 0 or ≥4), the Saturday-midnight lock, and bet privacy (hidden until `lock_at`) are enforced by triggers/RLS in Postgres, not in JS or cron. Multi-row writes go through SQL RPCs (`upsert_bet`, `ingest_polls`, `apply_scoring`, `admin_upsert_bet`) so they're transactional.
 
 Cross-leg invariants:
 - **Exactly one `open` game week** at a time; locks are timestamp predicates, so late crons affect bookkeeping only, never fairness. All pipeline jobs are idempotent — rerunning is the standard incident response.
@@ -56,6 +56,31 @@ npm run build      # tsc --noEmit + vite build; must stay clean
 Migrations apply over the session pooler (`aws-0-eu-central-1.pooler.supabase.com:5432`, user `postgres.tcljueekscqccgswlgxb`, password in `~/.polishuk_db_password`) with psycopg from the venv — there is no supabase CLI setup; procedure in docs/06. New tables/functions need explicit grants (see `0002_grants.sql`) because direct-connection DDL skips dashboard default privileges.
 
 Deployment is push-to-main: CI (`test.yml`) runs pytest + SQL parse; `deploy-pages.yml` rebuilds the site (frontend changes only — dispatch it manually after changing repo variables). Scraper fixture policy: when Wikipedia's format drifts, commit the new API snapshot to `pipeline/fixtures/` first, then fix the parser against it.
+
+## Key decisions — don't re-litigate
+
+The full log with dates is [`docs/00-overview.md` §Decisions log](docs/00-overview.md); these are the ones that get re-suggested:
+
+- **Wikipedia is the sole ingested poll source.** N12's open JSON API, Kan, and other outlets are validation-only — never ingested. A second ingest source defeats the fail-loud merger tripwire, on top of copyright and shape instability.
+- **Party `code` is permanent.** A public rename updates `name_he`/`name_en` and adds an alias; the code stays (the Tropper-Hendel list is `yesodot` while displaying בית ציוני / "Zionist Home"). Changing a code breaks bets, polls, transitions and carry-forward remapping.
+- **Scoring constants are settled**: polls `max(0, 100 − E)`, finals `max(0, 150 − E)`, in `app_settings`, tunable pre-launch only and frozen at launch. Normative in docs/02 §4.
+- **Scoring is always a full recompute**, never incremental — that is what makes corrections and late poll approvals self-heal on rerun.
+- **Game weeks are Sunday 00:00 → Saturday 23:59 Asia/Jerusalem** (R8, revised 2026-08-19 from R7's Friday→Thursday). The lock is **Saturday midnight — the week's own start instant**, enforced as a timestamp predicate in Postgres. Lock and week boundary coincide on purpose: no poll counting toward a week can be public before that week's bets close, so the anti-sniping property holds by construction (docs/02 §7). Don't "simplify" the lock back to a fixed offset inside the week.
+- **No X/Twitter OAuth** (API/pricing risk) — Google OAuth + magic link only; players may display an X handle.
+
+## Status / where we stand
+
+Last refresh: 2026-08-19 @ 155ec89
+(If more than a month or ~50 commits have passed since this stamp,
+suggest running /refresh. Suggest only — /refresh is user-triggered.)
+
+**Pre-launch.** Launch is **Friday morning 2026-09-11**, the day after the final party lists land Thursday 09-10 (owner decision, 2026-08-19). First playable game week is **09-13→09-19**, locking Saturday 09-12 at midnight — so players sign up and place their first bets across launch Friday and Shabbat. The deployed site serves only the coming-soon gate (`VITE_COMING_SOON=1` repo variable), and the prod DB still carries the 2026-07-12 mock players/weeks (`scripts/mock_data.py teardown` before launch — it does **not** touch `email_signups`, which holds real signups).
+
+**Poll ingest is down, deliberately parked.** The scraper has failed every run since 2026-08-07 on `Unmapped column: 'Unity'` (tripwire issue #4 open). Per the 2026-08-19 decision, no per-party registry work happens until the final lists land **Thursday 2026-09-10** — the registry is rebuilt against them in one pass, and the first green scrape after that backfills everything, because a run re-parses the whole Wikipedia table. So expect: red scrape runs and four standing watchdog alerts until 09-10, and a review queue that keeps growing (8 pending, oldest ~39 days). **The 09-10→09-11 window is tight** — registry rebuild, backfill scrape, review-queue clearing, mock-data teardown, the `game_weeks` regeneration below and the gate flip all land in a single overnight. Everything else is green — `weekly-close` and `watchdog` run clean, pipeline suite 56/56, frontend build clean.
+
+⚠️ **Owed to the live DB before launch:** the week calendar moved to Sunday→Saturday on 2026-08-19 (R8) in code, docs and `seed.sql`, but the **live `game_weeks` rows are still Friday weeks with Friday-noon locks**. They must be regenerated in place over the pooler — same operation as R7's remap — before the gate flips, or the first week will lock at the wrong instant.
+
+Per-session detail, gotchas and the next-step queue live in [`handoffs/`](handoffs/) — read the latest one first.
 
 <!-- claude-config:pointer -->
 ## Personal Claude config

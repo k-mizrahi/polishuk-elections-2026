@@ -45,18 +45,29 @@ def test_carry_forward_skips_players_who_already_bet():
 
 
 def test_week_calendar():
-    # 2026-07-11 is a Saturday -> its week started Friday 2026-07-10
-    assert gameweeks.week_start_for(date(2026, 7, 11)) == date(2026, 7, 10)
-    assert gameweeks.week_start_for(date(2026, 7, 10)) == date(2026, 7, 10)
-    # lock = the week's own Friday 12:00 Israel = 09:00 UTC in July (IDT=UTC+3)
-    lock = gameweeks.lock_at_for(date(2026, 7, 10))
-    assert lock == datetime(2026, 7, 10, 9, 0, tzinfo=timezone.utc)
-    # winter week: IST=UTC+2 -> 10:00 UTC (DST correctness); 2026-12-04 is a Friday
-    lock_w = gameweeks.lock_at_for(date(2026, 12, 4))
-    assert lock_w == datetime(2026, 12, 4, 10, 0, tzinfo=timezone.utc)
+    # 2026-07-15 is a Wednesday -> its week started Sunday 2026-07-12
+    assert gameweeks.week_start_for(date(2026, 7, 15)) == date(2026, 7, 12)
+    assert gameweeks.week_start_for(date(2026, 7, 12)) == date(2026, 7, 12)
+    # 2026-07-18 is the Saturday that closes that week
+    assert gameweeks.week_end_for(date(2026, 7, 12)) == date(2026, 7, 18)
+    # lock = Saturday midnight == the week's own Sunday 00:00 Israel;
+    # in July (IDT=UTC+3) that is 21:00 UTC on the preceding Saturday
+    lock = gameweeks.lock_at_for(date(2026, 7, 12))
+    assert lock == datetime(2026, 7, 11, 21, 0, tzinfo=timezone.utc)
+    # winter week: IST=UTC+2 -> 22:00 UTC (DST correctness); 2026-12-06 is a Sunday
+    lock_w = gameweeks.lock_at_for(date(2026, 12, 6))
+    assert lock_w == datetime(2026, 12, 5, 22, 0, tzinfo=timezone.utc)
+
+
+def test_lock_coincides_with_week_start():
+    """The lock is the week boundary itself — nothing counting toward the week
+    can be published before bets close (docs/02 §2)."""
+    for ws in (date(2026, 9, 13), date(2026, 10, 25), date(2027, 1, 3)):
+        local = gameweeks.lock_at_for(ws).astimezone(gameweeks.IL_TZ)
+        assert (local.date(), local.hour, local.minute) == (ws, 0, 0)
 
 
 def test_generate_weeks_contiguous():
     weeks = gameweeks.generate_weeks(date(2026, 7, 12), date(2026, 12, 31))
-    assert weeks[0]["week_start"] == "2026-07-10"   # Friday on/before the range start
+    assert weeks[0]["week_start"] == "2026-07-12"   # Sunday on/before the range start
     assert len(weeks) == 25

@@ -26,7 +26,7 @@ E(b, t) = Σ_p | b_p − t_p |        over all parties p in the common partition
 
 ## 2. The weekly poll average (the target for poll bets)
 
-For game week *w* (**Friday 00:00 – Thursday 23:59 Asia/Jerusalem** — the "Friday→Friday" window, R7/docs/09) and each party *p* active in week *w*:
+For game week *w* (**Sunday 00:00 – Saturday 23:59 Asia/Jerusalem** — the Israeli week; revised 2026-08-19, was Friday→Thursday per R7/docs/09) and each party *p* active in week *w*:
 
 ```
 avg(w, p) = mean over approved polls q with fieldwork_end(q) ∈ w of seats(q, p)
@@ -34,7 +34,7 @@ avg(w, p) = mean over approved polls q with fieldwork_end(q) ∈ w of seats(q, p
 
 Rules, all normative:
 
-- **Membership**: a poll belongs to week *w* iff its **last fieldwork date** falls in *w*'s Friday→Thursday span. Fieldwork date, not publication date — it's the only date Wikipedia reliably lists and it's manipulation-neutral. (A nullable `polls.publication_date` column exists for the day a real publication-date source is added; nothing populates it yet, so membership keys on `fieldwork_end`. The player-facing rules say "published Friday to Friday" colloquially.)
+- **Membership**: a poll belongs to week *w* iff its **last fieldwork date** falls in *w*'s Sunday→Saturday span. Fieldwork date, not publication date — it's the only date Wikipedia reliably lists and it's manipulation-neutral. (A nullable `polls.publication_date` column exists for the day a real publication-date source is added; nothing populates it yet, so membership keys on `fieldwork_end`. The player-facing rules say "Sunday to Saturday" colloquially.)
 - **Only `approved` polls** count (scraper auto-approves clean rows; anomalies wait in the review queue — doc 05).
 - **Unweighted mean** — each poll counts once regardless of sample size. (Sample-size weighting adds arguing surface for negligible accuracy gain.)
 - **No rounding** — the average stays fractional (e.g., 4.33).
@@ -120,7 +120,7 @@ Partition groups all three; bet 9 vs. actual 5 + 4 = 9 → contributes 0.
 |---|---|
 | **Hedging / distorting** | Score is a proper-style point score in your own error only; leaderboard = sum of per-bet scores, not rank-per-week payouts (rank-based weekly prizes would reward variance-seeking). Reporting anything but your central belief strictly increases expected error. |
 | **Copying the leader** | Bets are RLS-hidden until lock; by the time you can see a bet it can no longer be copied into the same week. |
-| **Sniping the poll average** | Bets for week *w* lock at *w*'s **Friday 12:00**, the first moment of *w*'s Friday→Thursday measurement window. A poll counts by its **fieldwork_end** inside that window, and a poll's results aren't out until its fieldwork finishes — so at lock time essentially no result of a target-week poll exists yet. The only edge is a poll whose fieldwork ends that opening Friday morning and is already public by noon; since the average is an **unweighted mean over ~4–6 polls**, one such poll moves it by <1 seat and can't be reliably exploited. Late submission otherwise buys only the freshest *previous-week* information, which everyone has. |
+| **Sniping the poll average** | Bets for week *w* lock at **Saturday midnight**, which *is* the first instant of *w*'s Sunday→Saturday measurement window (revised 2026-08-19; the earlier Friday-noon lock sat 12h inside the week). A poll counts by its **fieldwork_end** inside that window, and no poll's fieldwork can have ended inside *w* before *w* has begun — so at lock time **no** result of a target-week poll can exist, publicly or otherwise. The window is closed by construction rather than by argument. Late submission buys only the freshest *previous-week* information, which everyone has. |
 | **Pollster-participants** | Ignored by owner decision (also: one poll among ~4–6 weekly moves an unweighted average little). |
 | **Sockpuppets** | Low benefit (scores aren't relative — a puppet can't boost your score, only clutter the board). Mitigations: OAuth-gated accounts, public handles, admin ban voids scores. Accepted residual risk for a Twitter-public game. |
 | **Quitting while ahead** | Not possible to exploit: carried bets keep scoring every week, and totals only grow. (This is why the leaderboard ranks by total, not average.) |
