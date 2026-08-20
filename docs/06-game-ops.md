@@ -28,6 +28,15 @@ All jobs are idempotent (natural-key upserts + truncate-rewrite scoring); rerunn
 
 Trigger: scraper run fails with `Unmapped party column: "<Header>"`.
 
+> ⚠️ **The `scrape` schedule is paused right now (since 2026-08-20).** Ingest is parked
+> until the final lists publish, so the 6-hourly cron was producing ~4 failure emails a
+> day against a known, accepted condition. **Step 0 on 2026-09-10 is to uncomment the
+> `schedule:` block in `.github/workflows/scrape.yml`** — the rest of this runbook assumes
+> the cron is live. Until then the job runs only on `gh workflow run scrape.yml`. The
+> tripwire itself is unchanged: the scraper still aborts on an unmapped column. The 6h
+> cron also served as the Supabase free-tier keep-alive; while paused that is covered by
+> `watchdog`, which runs every 3h and queries the DB.
+
 1. In admin → Parties: create the new party (`code`, `name_he/en`, `color`, `active_from` = merger date).
 2. Set `active_until` on the predecessor parties (day before `active_from`).
 3. Add `party_transitions` rows: each predecessor → new party, `effective_on` = merger date. (Split: one → many, same table.)
@@ -146,10 +155,11 @@ deployed in lockstep. Still open, tracked here rather than in a session memory:
 | Item | Severity | State |
 |---|---|---|
 | **Poll auto-approve** — new polls default `status="approved"` (`cli.py`), so a fabricated Wikipedia row summing to 120 auto-ingests within 6h and skews scoring | high | Open **design decision**: owner weighing weekly admin confirmation. Safe to adopt approve-on-review because scoring is a pure full recompute that self-heals on rerun; alternative is auto-approve only known pollsters + N12 cross-check the watchdog already fetches |
-| `leaderboard` view lacks `security_invoker` (RLS bypass; leaks `first_bet_at`) | low | Open |
-| RLS enabled but not **forced** on tables | low | Open |
-| GitHub Actions pinned to mutable tags, not SHAs | low | Open |
-| `twitter_handle` / `parties.color` unvalidated | low | Open |
+| **Handle charset unconstrained** — `profiles.handle` is checked only for length (3–20 chars, `0001_init`), so a handle may embed bidi control characters and spoof how another player's name renders on the public leaderboard | low | Open **product decision** (found 2026-08-20): constraining the charset also decides whether Hebrew handles stay allowed. The *rendering* half is fixed — every user-name render site uses `dir="auto"` |
+| `leaderboard` view lacks `security_invoker` (RLS bypass; leaks `first_bet_at`) | low | Open — deliberately: `security_invoker=on` is incompatible with 0005 (the view needs owner rights to read all profiles), and `first_bet_at` is the leaderboard tiebreaker sort |
+| RLS enabled but not **forced** on tables | low | Open — deliberately: `profiles` policies call `is_admin()`, which reads `profiles`, so forcing RLS risks recursion |
+| ~~GitHub Actions pinned to mutable tags~~ | low | **Closed 2026-08-20** — all 14 refs across the six workflows pinned to commit SHAs; `test`/`deploy-pages` green after |
+| ~~`twitter_handle` / `parties.color` unvalidated~~ | low | **Closed 2026-08-20** — migration `0007_field_validation.sql`, applied live and verified to reject bad input. The DB is the boundary: both columns are written to PostgREST straight from the browser. Frontend adds `cleanTwitterHandle()` for a readable error |
 
 Rollback note: a frontend rollback to a pre-2026-07-15 build breaks against 0005's
 tightened RLS — reverting the frontend must also revert 0005.
